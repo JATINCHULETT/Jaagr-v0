@@ -1,0 +1,319 @@
+.schools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.school-card {
+    background: var(--primary-white);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+}
+
+.school-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.school-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.school-card-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.school-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.school-card-avatar span {
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.school-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--primary-bg);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.icon-btn:hover {
+    background: var(--primary-purple-light);
+}
+
+.icon-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.school-card-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.school-card-id {
+    font-size: 0.9rem;
+    color: var(--primary-purple);
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.school-card-stats {
+    display: flex;
+    gap: 24px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 16px;
+}
+
+.school-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.school-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.school-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.school-card-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Modal form */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Credentials Display */
+.credentials-display {
+    text-align: center;
+}
+
+.credentials-note {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+}
+
+.credential-item {
+    margin-bottom: 16px;
+}
+
+.credential-item label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.credential-value {
+    background: var(--primary-bg);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-family: monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Tests Management Modal */
+.tests-checklist {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    margin-bottom: 16px;
+}
+
+.test-checkbox-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.test-checkbox-item:hover {
+    background: var(--primary-bg);
+}
+
+.test-checkbox-item .form-checkbox {
+    flex: 1;
+}
+
+.test-question-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 12px;
+}
+
+.assign-all-checkbox {
+    background: var(--primary-purple-light);
+    padding: 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+}
+
+/* Credentials Box on Card */
+.credentials-box {
+    background: var(--primary-bg);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 16px;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.credential-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.credential-row:last-child {
+    margin-bottom: 0;
+}
+
+.credential-row .credential-label {
+    color: var(--text-muted);
+    min-width: 40px;
+}
+
+.credential-row .credential-value {
+    flex: 1;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.copy-btn:hover {
+    opacity: 1;
+}
+
+/* Blocked state */
+.school-card.blocked {
+    border: 2px solid var(--danger);
+    opacity: 0.8;
+}
+
+.blocked-badge {
+    position: absolute;
+    top: 12px;
+    right: -30px;
+    background: var(--danger);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 36px;
+    transform: rotate(45deg);
+    letter-spacing: 1px;
+}
+
+.icon-btn.success:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.icon-btn.warning:hover {
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.icon-btn.primary {
+    background: rgba(185, 147, 233, 0.15);
+}
+
+.icon-btn.primary:hover {
+    background: rgba(185, 147, 233, 0.25);
+}
+
+/* Analytics Modal */
+.modal-xlarge {
+    width: 95%;
+    max-width: 1200px;
+    max-height: 90vh;
+}
+
+.modal-body-scroll {
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+.analytics-filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 16px;
+    background: var(--primary-bg);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+}
+
+.access-id-code {
+    background: var(--primary-bg);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    font-size: 0.8rem;
+}
