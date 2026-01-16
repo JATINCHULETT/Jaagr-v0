@@ -34,10 +34,6 @@ npm run dev     # Starts app on http://localhost:5173
 
 ## 🔐 Default Login Credentials
 
-### Company Admin
-- **Email**: admin@jaagrmind.com
-- **Password**: JaagrMind@2026
-
 ### School Admin
 - Login with School ID and password (auto-generated when admin registers a school)
 
