@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartBar, faChartLine, faStopwatch, faBullseye, faUsers } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -188,7 +190,7 @@ const SchoolAnalytics = () => {
                     )}
                     <div style={{ marginLeft: 'auto' }}>
                         <button className="btn btn-primary" onClick={handleViewStudents}>
-                            👥 View All Students
+                            <FontAwesomeIcon icon={faUsers} /> View All Students
                         </button>
                     </div>
                 </div>
@@ -201,7 +203,7 @@ const SchoolAnalytics = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <div className="stat-icon">📊</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faChartBar} /></div>
                     <div className="stat-value">{data?.totalSubmissions || 0}</div>
                     <div className="stat-label">Total Submissions</div>
                 </motion.div>
@@ -212,7 +214,7 @@ const SchoolAnalytics = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <div className="stat-icon">📈</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faChartLine} /></div>
                     <div className="stat-value">{data?.avgScore || 0}</div>
                     <div className="stat-label">Average Score</div>
                 </motion.div>
@@ -223,7 +225,7 @@ const SchoolAnalytics = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="stat-icon">⏱️</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faStopwatch} /></div>
                     <div className="stat-value">{Math.round((data?.avgTimeTaken || 0) / 60)}m</div>
                     <div className="stat-label">Avg Time</div>
                 </motion.div>
@@ -234,7 +236,7 @@ const SchoolAnalytics = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div className="stat-icon">🎯</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faBullseye} /></div>
                     <div className="stat-value">
                         {data?.bucketDistribution?.['Skill Support Needed'] || 0}
                     </div>

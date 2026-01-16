@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileExport, faFileImport, faUserPlus, faPenToSquare, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import api from '../../services/api';
 import './StudentManagement.css';
@@ -11,7 +13,9 @@ const StudentManagement = () => {
     const [showModal, setShowModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [filters, setFilters] = useState({ class: '', section: '', status: '' });
+    const [searchQuery, setSearchQuery] = useState('');
     const [formData, setFormData] = useState({ name: '', rollNo: '', class: '', section: '' });
+    const [editingStudent, setEditingStudent] = useState(null);
     const fileInputRef = useRef(null);
     const [importing, setImporting] = useState(false);
 
@@ -45,17 +49,33 @@ const StudentManagement = () => {
         }
     };
 
-    const handleAddStudent = async (e) => {
+    const handleStudentSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/api/school/students', formData);
+            if (editingStudent) {
+                await api.put(`/api/school/students/${editingStudent._id}`, formData);
+            } else {
+                await api.post('/api/school/students', formData);
+            }
             setShowModal(false);
             setFormData({ name: '', rollNo: '', class: '', section: '' });
+            setEditingStudent(null);
             fetchStudents();
             fetchClasses();
         } catch (error) {
-            alert(error.response?.data?.message || 'Error adding student');
+            alert(error.response?.data?.message || `Error ${editingStudent ? 'updating' : 'adding'} student`);
         }
+    };
+
+    const handleEdit = (student) => {
+        setEditingStudent(student);
+        setFormData({
+            name: student.name,
+            rollNo: student.rollNo || '',
+            class: student.class,
+            section: student.section || ''
+        });
+        setShowModal(true);
     };
 
     const handleImport = async (e) => {
@@ -149,6 +169,17 @@ const StudentManagement = () => {
             {/* Actions Bar */}
             <div className="actions-bar">
                 <div className="filter-bar">
+                    <div className="search-bar">
+                        <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                        <input
+                            type="text"
+                            className="form-input search-input"
+                            placeholder="Search by name or ID..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
                     <select
                         className="form-input"
                         value={filters.class}
@@ -181,21 +212,21 @@ const StudentManagement = () => {
                         onClick={handleExportIds}
                         whileHover={{ scale: 1.02 }}
                     >
-                        📋 Export IDs
+                        <FontAwesomeIcon icon={faFileExport} /> Export IDs
                     </motion.button>
                     <motion.button
                         className="btn btn-secondary"
                         onClick={() => setShowImportModal(true)}
                         whileHover={{ scale: 1.02 }}
                     >
-                        📤 Import Excel
+                        <FontAwesomeIcon icon={faFileImport} /> Import Excel
                     </motion.button>
                     <motion.button
                         className="btn btn-primary"
                         onClick={() => setShowModal(true)}
                         whileHover={{ scale: 1.02 }}
                     >
-                        + Add Student
+                        <FontAwesomeIcon icon={faUserPlus} /> Add Student
                     </motion.button>
                 </div>
             </div>
@@ -211,69 +242,91 @@ const StudentManagement = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                 >
-                    {students.length > 0 ? (
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Access ID</th>
-                                        <th>Class</th>
-                                        <th>Section</th>
-                                        <th>Roll No</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {students.map((student) => {
-                                        const hasCompleted = student.testStatus?.some(t => t.isCompleted);
-                                        return (
-                                            <tr key={student._id}>
-                                                <td className="font-medium">{student.name}</td>
-                                                <td>
-                                                    <code className="access-id-code">{student.accessId}</code>
-                                                </td>
-                                                <td>{student.class}</td>
-                                                <td>{student.section || '-'}</td>
-                                                <td>{student.rollNo || '-'}</td>
-                                                <td>
-                                                    <span className={`badge ${hasCompleted ? 'badge-success' : 'badge-warning'}`}>
-                                                        {hasCompleted ? 'Completed' : 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div className="table-actions">
-                                                        <button
-                                                            className="icon-btn danger"
-                                                            onClick={() => handleDelete(student._id)}
-                                                            title="Delete"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
-                                                </td>
+                    {(() => {
+                        const filteredStudents = students.filter(student =>
+                            student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            student.accessId.toLowerCase().includes(searchQuery.toLowerCase())
+                        );
+
+                        if (filteredStudents.length > 0) {
+                            return (
+                                <div className="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Access ID</th>
+                                                <th>Class</th>
+                                                <th>Section</th>
+                                                <th>Roll No</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <div className="empty-state">
-                            <div className="empty-state-icon">👨‍🎓</div>
-                            <h3 className="empty-state-title">No Students Yet</h3>
-                            <p className="empty-state-text">Add students manually or import from Excel</p>
-                            <div className="flex gap-3 justify-center mt-4">
-                                <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>
-                                    Import Excel
-                                </button>
-                                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                                    Add Student
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                                        </thead>
+                                        <tbody>
+                                            {filteredStudents.map((student) => {
+                                                const hasCompleted = student.testStatus?.some(t => t.isCompleted);
+                                                return (
+                                                    <tr key={student._id}>
+                                                        <td className="font-medium">{student.name}</td>
+                                                        <td>
+                                                            <code className="access-id-code">{student.accessId}</code>
+                                                        </td>
+                                                        <td>{student.class}</td>
+                                                        <td>{student.section || '-'}</td>
+                                                        <td>{student.rollNo || '-'}</td>
+                                                        <td>
+                                                            <span className={`badge ${hasCompleted ? 'badge-success' : 'badge-warning'}`}>
+                                                                {hasCompleted ? 'Completed' : 'Pending'}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div className="table-actions">
+                                                                <button
+                                                                    className="icon-btn primary"
+                                                                    onClick={() => handleEdit(student)}
+                                                                    title="Edit"
+                                                                >
+                                                                    <FontAwesomeIcon icon={faPenToSquare} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            );
+                        } else if (students.length > 0 && filteredStudents.length === 0) {
+                            return (
+                                <div className="empty-state">
+                                    <div className="empty-state-icon"><FontAwesomeIcon icon={faSearch} /></div>
+                                    <h3 className="empty-state-title">No Results Found</h3>
+                                    <p className="empty-state-text">No students match "{searchQuery}"</p>
+                                    <button className="btn btn-secondary" onClick={() => setSearchQuery('')}>
+                                        Clear Search
+                                    </button>
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div className="empty-state">
+                                    <div className="empty-state-icon">👨‍🎓</div>
+                                    <h3 className="empty-state-title">No Students Yet</h3>
+                                    <p className="empty-state-text">Add students manually or import from Excel</p>
+                                    <div className="flex gap-3 justify-center mt-4">
+                                        <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>
+                                            Import Excel
+                                        </button>
+                                        <button className="btn btn-primary" onClick={() => { setEditingStudent(null); setFormData({ name: '', rollNo: '', class: '', section: '' }); setShowModal(true); }}>
+                                            Add Student
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        }
+                    })()}
                 </motion.div>
             )}
 
@@ -285,7 +338,7 @@ const StudentManagement = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setShowModal(false)}
+                        onClick={() => { setShowModal(false); setEditingStudent(null); setFormData({ name: '', rollNo: '', class: '', section: '' }); }}
                     >
                         <motion.div
                             className="modal"
@@ -295,11 +348,11 @@ const StudentManagement = () => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="modal-header">
-                                <h2 className="modal-title">Add New Student</h2>
-                                <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+                                <h2 className="modal-title">{editingStudent ? 'Edit Student' : 'Add New Student'}</h2>
+                                <button className="modal-close" onClick={() => { setShowModal(false); setEditingStudent(null); setFormData({ name: '', rollNo: '', class: '', section: '' }); }}>×</button>
                             </div>
                             <div className="modal-body">
-                                <form onSubmit={handleAddStudent}>
+                                <form onSubmit={handleStudentSubmit}>
                                     <div className="form-group">
                                         <label className="form-label">Student Name *</label>
                                         <input
@@ -343,11 +396,11 @@ const StudentManagement = () => {
                                         />
                                     </div>
                                     <div className="modal-footer">
-                                        <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
+                                        <button type="button" className="btn btn-outline" onClick={() => { setShowModal(false); setEditingStudent(null); setFormData({ name: '', rollNo: '', class: '', section: '' }); }}>
                                             Cancel
                                         </button>
                                         <button type="submit" className="btn btn-primary">
-                                            Add Student
+                                            {editingStudent ? 'Update Student' : 'Add Student'}
                                         </button>
                                     </div>
                                 </form>

@@ -50,10 +50,12 @@
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+    color: var(--text-dark);
 }
 
 .header-icon-btn:hover {
     background: var(--gradient-purple);
+    color: white;
 }
 
 .header-user-btn {
@@ -146,4 +148,31 @@
     .header-dropdown-arrow {
         display: none;
     }
+}
+
+/* Dark mode dropdown fixes */
+[data-theme="dark"] .dropdown-menu {
+    background: #2D2640;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #FFFFFF !important;
+    background: transparent;
+}
+
+[data-theme="dark"] .dropdown-item svg {
+    color: #B993E9 !important;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background: rgba(185, 147, 233, 0.2) !important;
+}
+
+[data-theme="dark"] .dropdown-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .dropdown-user-name {
+    color: #FFFFFF;
 }

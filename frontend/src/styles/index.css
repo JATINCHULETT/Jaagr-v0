@@ -71,15 +71,36 @@
   --shadow-purple: 0 4px 14px 0 rgba(107, 77, 138, 0.4);
 }
 
+/* Dark mode specific overrides for dropdown */
+[data-theme="dark"] .dropdown-item {
+  color: #E8E8E8 !important;
+}
+
+[data-theme="dark"] .dropdown-item svg {
+  color: #B993E9;
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .dropdown-item-danger {
+  color: #F87171 !important;
+}
+
+[data-theme="dark"] .dropdown-item-danger svg {
+  color: #F87171;
+}
+
 /* Dark mode specific overrides */
 [data-theme="dark"] .form-input {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.1);
   color: var(--text-dark);
 }
 
 [data-theme="dark"] .form-input:focus {
-  background: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.08);
   border-color: var(--primary-purple);
 }
 
@@ -90,6 +111,14 @@
 
 [data-theme="dark"] select.form-input {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+
+[data-theme="dark"] option {
+  background-color: #1A1625;
+  color: #E8E8E8;
 }
 
 [data-theme="dark"] .card {
@@ -373,6 +402,8 @@ textarea.form-input {
 
 select.form-input {
   cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1002,6 +1033,7 @@ tr:hover td {
   top: 100%;
   right: 0;
   background: var(--primary-white);
+  border: 1px solid var(--primary-bg);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   min-width: 180px;

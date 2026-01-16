@@ -1,11 +1,26 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faKey,
+    faClipboardList,
+    faChartLine,
+    faPenToSquare,
+    faBan,
+    faCircleCheck,
+    faTrash,
+    faCopy,
+    faSchool,
+    faSearch,
+    faPlus
+} from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import api from '../../services/api';
 import './SchoolManagement.css';
 
 const SchoolManagement = () => {
     const [schools, setSchools] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [assessments, setAssessments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -315,11 +330,26 @@ const SchoolManagement = () => {
         );
     }
 
+    const filteredSchools = schools.filter(school =>
+        school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        school.schoolId.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <Layout title="School Management" subtitle="Register and manage schools">
             <div className="page-header">
-                <div>
-                    <span className="text-muted">{schools.length} school(s) registered</span>
+                <div className="search-bar">
+                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
+                    <input
+                        type="text"
+                        className="form-input search-input"
+                        placeholder="Search schools by name or ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+                <div className="header-info">
+                    <span className="text-muted">{filteredSchools.length} of {schools.length} school(s)</span>
                 </div>
                 <motion.button
                     className="btn btn-primary"
@@ -327,13 +357,13 @@ const SchoolManagement = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                 >
-                    + Register School
+                    <FontAwesomeIcon icon={faPlus} /> Register School
                 </motion.button>
             </div>
 
             {/* Schools Grid */}
             <div className="schools-grid">
-                {schools.map((school, index) => (
+                {filteredSchools.map((school, index) => (
                     <motion.div
                         key={school._id}
                         className={`school-card ${school.isBlocked ? 'blocked' : ''}`}
@@ -351,48 +381,48 @@ const SchoolManagement = () => {
                                     <span>{school.name[0]}</span>
                                 )}
                             </div>
-                            <div className="school-card-actions">
+                            <div className="school-card-actions-grid">
                                 <button
-                                    className="icon-btn"
+                                    className="action-btn"
                                     onClick={() => openCredentialsModal(school)}
-                                    title="Edit Credentials"
                                 >
-                                    🔑
+                                    <FontAwesomeIcon icon={faKey} />
+                                    <span>Credentials</span>
                                 </button>
                                 <button
-                                    className="icon-btn"
+                                    className="action-btn"
                                     onClick={() => openTestsModal(school)}
-                                    title="Manage Tests"
                                 >
-                                    📋
+                                    <FontAwesomeIcon icon={faClipboardList} />
+                                    <span>Tests</span>
                                 </button>
                                 <button
-                                    className="icon-btn primary"
+                                    className="action-btn primary"
                                     onClick={() => openAnalyticsModal(school)}
-                                    title="View Analytics"
                                 >
-                                    📊
+                                    <FontAwesomeIcon icon={faChartLine} />
+                                    <span>Analytics</span>
                                 </button>
                                 <button
-                                    className="icon-btn"
+                                    className="action-btn"
                                     onClick={() => openModal(school)}
-                                    title="Edit"
                                 >
-                                    ✏️
+                                    <FontAwesomeIcon icon={faPenToSquare} />
+                                    <span>Edit</span>
                                 </button>
                                 <button
-                                    className={`icon-btn ${school.isBlocked ? 'success' : 'warning'}`}
+                                    className={`action-btn ${school.isBlocked ? 'success' : 'warning'}`}
                                     onClick={() => handleToggleBlock(school)}
-                                    title={school.isBlocked ? 'Unblock' : 'Block'}
                                 >
-                                    {school.isBlocked ? '✅' : '🚫'}
+                                    <FontAwesomeIcon icon={school.isBlocked ? faCircleCheck : faBan} />
+                                    <span>{school.isBlocked ? 'Unblock' : 'Block'}</span>
                                 </button>
                                 <button
-                                    className="icon-btn danger"
+                                    className="action-btn danger"
                                     onClick={() => handleDelete(school._id)}
-                                    title="Delete"
                                 >
-                                    🗑️
+                                    <FontAwesomeIcon icon={faTrash} />
+                                    <span>Delete</span>
                                 </button>
                             </div>
                         </div>
@@ -404,13 +434,13 @@ const SchoolManagement = () => {
                             <div className="credential-row">
                                 <span className="credential-label">ID:</span>
                                 <span className="credential-value">{school.schoolId}</span>
-                                <button className="copy-btn" onClick={() => copyToClipboard(school.schoolId)}>📋</button>
+                                <button className="copy-btn" onClick={() => copyToClipboard(school.schoolId)}><FontAwesomeIcon icon={faCopy} /></button>
                             </div>
                             <div className="credential-row">
                                 <span className="credential-label">Pass:</span>
                                 <span className="credential-value">{school.plainPassword || '••••••••'}</span>
                                 {school.plainPassword && (
-                                    <button className="copy-btn" onClick={() => copyToClipboard(school.plainPassword)}>📋</button>
+                                    <button className="copy-btn" onClick={() => copyToClipboard(school.plainPassword)}><FontAwesomeIcon icon={faCopy} /></button>
                                 )}
                             </div>
                         </div>
@@ -438,9 +468,20 @@ const SchoolManagement = () => {
                     </motion.div>
                 ))}
 
+                {filteredSchools.length === 0 && schools.length > 0 && (
+                    <div className="empty-state card">
+                        <div className="empty-state-icon"><FontAwesomeIcon icon={faSearch} /></div>
+                        <h3 className="empty-state-title">No Results Found</h3>
+                        <p className="empty-state-text">No schools match "{searchQuery}"</p>
+                        <button className="btn btn-secondary" onClick={() => setSearchQuery('')}>
+                            Clear Search
+                        </button>
+                    </div>
+                )}
+
                 {schools.length === 0 && (
                     <div className="empty-state card">
-                        <div className="empty-state-icon">🏫</div>
+                        <div className="empty-state-icon"><FontAwesomeIcon icon={faSchool} /></div>
                         <h3 className="empty-state-title">No Schools Yet</h3>
                         <p className="empty-state-text">Register your first school to get started</p>
                         <button className="btn btn-primary" onClick={() => openModal()}>
@@ -769,57 +810,58 @@ const SchoolManagement = () => {
                                 <button className="modal-close" onClick={closeAnalyticsModal}>×</button>
                             </div>
 
-                            <div className="modal-body modal-body-scroll">
-                                {/* Filters */}
-                                <div className="analytics-filters">
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        placeholder="Search by name or ID..."
-                                        value={analyticsFilters.search}
-                                        onChange={(e) => handleAnalyticsFilterChange('search', e.target.value)}
-                                        style={{ maxWidth: '200px' }}
-                                    />
+                            {/* Filters - Fixed at top */}
+                            <div className="analytics-filters">
+                                <input
+                                    type="text"
+                                    className="form-input"
+                                    placeholder="Search by name or ID..."
+                                    value={analyticsFilters.search}
+                                    onChange={(e) => handleAnalyticsFilterChange('search', e.target.value)}
+                                    style={{ maxWidth: '200px' }}
+                                />
+                                <select
+                                    className="form-input"
+                                    value={analyticsFilters.class}
+                                    onChange={(e) => handleAnalyticsFilterChange('class', e.target.value)}
+                                    style={{ maxWidth: '150px' }}
+                                >
+                                    <option value="">All Classes</option>
+                                    {analyticsData?.filters?.classes?.map(c => (
+                                        <option key={c} value={c}>{c}</option>
+                                    ))}
+                                </select>
+                                {analyticsFilters.class && (
                                     <select
                                         className="form-input"
-                                        value={analyticsFilters.class}
-                                        onChange={(e) => handleAnalyticsFilterChange('class', e.target.value)}
+                                        value={analyticsFilters.section}
+                                        onChange={(e) => handleAnalyticsFilterChange('section', e.target.value)}
                                         style={{ maxWidth: '150px' }}
                                     >
-                                        <option value="">All Classes</option>
-                                        {analyticsData?.filters?.classes?.map(c => (
-                                            <option key={c} value={c}>{c}</option>
+                                        <option value="">All Sections</option>
+                                        {analyticsData?.filters?.sections?.map(s => (
+                                            <option key={s} value={s}>{s}</option>
                                         ))}
                                     </select>
-                                    {analyticsFilters.class && (
-                                        <select
-                                            className="form-input"
-                                            value={analyticsFilters.section}
-                                            onChange={(e) => handleAnalyticsFilterChange('section', e.target.value)}
-                                            style={{ maxWidth: '150px' }}
-                                        >
-                                            <option value="">All Sections</option>
-                                            {analyticsData?.filters?.sections?.map(s => (
-                                                <option key={s} value={s}>{s}</option>
-                                            ))}
-                                        </select>
-                                    )}
-                                    <select
-                                        className="form-input"
-                                        value={analyticsFilters.assessmentId}
-                                        onChange={(e) => handleAnalyticsFilterChange('assessmentId', e.target.value)}
-                                        style={{ maxWidth: '200px' }}
-                                    >
-                                        <option value="">All Assessments</option>
-                                        {analyticsData?.filters?.assessments?.map(a => (
-                                            <option key={a._id} value={a._id}>{a.title}</option>
-                                        ))}
-                                    </select>
-                                    <span className="text-muted">
-                                        {analyticsData?.totalStudents || 0} students
-                                    </span>
-                                </div>
+                                )}
+                                <select
+                                    className="form-input"
+                                    value={analyticsFilters.assessmentId}
+                                    onChange={(e) => handleAnalyticsFilterChange('assessmentId', e.target.value)}
+                                    style={{ maxWidth: '200px' }}
+                                >
+                                    <option value="">All Assessments</option>
+                                    {analyticsData?.filters?.assessments?.map(a => (
+                                        <option key={a._id} value={a._id}>{a.title}</option>
+                                    ))}
+                                </select>
+                                <span className="text-muted">
+                                    {analyticsData?.totalStudents || 0} students
+                                </span>
+                            </div>
 
+                            {/* Scrollable Table Content */}
+                            <div className="modal-body modal-body-scroll">
                                 {/* Student Table */}
                                 {analyticsLoading ? (
                                     <div className="loading-container" style={{ padding: '40px' }}>
@@ -893,7 +935,7 @@ const SchoolManagement = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </Layout>
+        </Layout >
     );
 };
 

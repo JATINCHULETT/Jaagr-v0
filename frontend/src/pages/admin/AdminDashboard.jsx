@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSchool, faUserGraduate, faClipboardList, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import api from '../../services/api';
 import './AdminDashboard.css';
@@ -66,7 +68,7 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <div className="stat-icon">🏫</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faSchool} /></div>
                     <div className="stat-value">{data?.overview?.totalSchools || 0}</div>
                     <div className="stat-label">Total Schools</div>
                 </motion.div>
@@ -77,7 +79,7 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="stat-icon">👨‍🎓</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faUserGraduate} /></div>
                     <div className="stat-value">{data?.overview?.totalStudents || 0}</div>
                     <div className="stat-label">Total Students</div>
                 </motion.div>
@@ -88,7 +90,7 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div className="stat-icon">📝</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faClipboardList} /></div>
                     <div className="stat-value">{data?.overview?.totalAssessments || 0}</div>
                     <div className="stat-label">Assessments</div>
                 </motion.div>
@@ -99,7 +101,7 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                 >
-                    <div className="stat-icon">✅</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faCheckCircle} /></div>
                     <div className="stat-value">{data?.overview?.totalSubmissions || 0}</div>
                     <div className="stat-label">Submissions</div>
                 </motion.div>

@@ -1,21 +1,31 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faHouse,
+    faSchool,
+    faClipboardList,
+    faChartLine,
+    faUserGraduate,
+    faFileLines,
+    faRightFromBracket
+} from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/logo.png';
 import './Sidebar.css';
 
 const adminMenuItems = [
-    { path: '/admin', icon: '🏠', label: 'Dashboard', exact: true },
-    { path: '/admin/schools', icon: '🏫', label: 'Schools' },
-    { path: '/admin/assessments', icon: '📝', label: 'Assessments' },
-    { path: '/admin/analytics', icon: '📊', label: 'Analytics' },
+    { path: '/admin', icon: faHouse, label: 'Dashboard', exact: true },
+    { path: '/admin/schools', icon: faSchool, label: 'Schools' },
+    { path: '/admin/assessments', icon: faClipboardList, label: 'Assessments' },
+    { path: '/admin/analytics', icon: faChartLine, label: 'Analytics' },
 ];
 
 const schoolMenuItems = [
-    { path: '/school', icon: '🏠', label: 'Dashboard', exact: true },
-    { path: '/school/students', icon: '👨‍🎓', label: 'Students' },
-    { path: '/school/tests', icon: '📝', label: 'Tests' },
-    { path: '/school/analytics', icon: '📊', label: 'Analytics' },
+    { path: '/school', icon: faHouse, label: 'Dashboard', exact: true },
+    { path: '/school/students', icon: faUserGraduate, label: 'Students' },
+    { path: '/school/tests', icon: faFileLines, label: 'Tests' },
+    { path: '/school/analytics', icon: faChartLine, label: 'Analytics' },
 ];
 
 const Sidebar = () => {
@@ -57,7 +67,7 @@ const Sidebar = () => {
                                     whileHover={{ x: 4 }}
                                     transition={{ duration: 0.2 }}
                                 >
-                                    <span className="sidebar-icon">{item.icon}</span>
+                                    <FontAwesomeIcon icon={item.icon} className="sidebar-icon" />
                                     <span className="sidebar-label">{item.label}</span>
                                 </motion.div>
                             </NavLink>
@@ -76,7 +86,7 @@ const Sidebar = () => {
 
             <div className="sidebar-footer">
                 <button className="sidebar-logout-btn" onClick={handleLogout}>
-                    <span>🚪</span>
+                    <FontAwesomeIcon icon={faRightFromBracket} />
                     <span>Logout</span>
                 </button>
             </div>

@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faUserGraduate,
+    faCheckCircle,
+    faClock,
+    faUserPlus,
+    faFileImport,
+    faLink,
+    faFileExport,
+    faPhone,
+    faEnvelope
+} from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -75,7 +87,7 @@ const SchoolDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <div className="stat-icon">👨‍🎓</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faUserGraduate} /></div>
                     <div className="stat-value">{data?.stats?.totalStudents || 0}</div>
                     <div className="stat-label">Total Students</div>
                 </motion.div>
@@ -86,7 +98,7 @@ const SchoolDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="stat-icon">✅</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faCheckCircle} /></div>
                     <div className="stat-value">{data?.stats?.completedTests || 0}</div>
                     <div className="stat-label">Tests Completed</div>
                 </motion.div>
@@ -97,7 +109,7 @@ const SchoolDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div className="stat-icon">⏳</div>
+                    <div className="stat-icon"><FontAwesomeIcon icon={faClock} /></div>
                     <div className="stat-value">{data?.stats?.pendingTests || 0}</div>
                     <div className="stat-label">Pending Tests</div>
                 </motion.div>
@@ -137,19 +149,19 @@ const SchoolDashboard = () => {
                 <h3>Quick Actions</h3>
                 <div className="actions-grid">
                     <a href="/school/students" className="action-card">
-                        <span className="action-icon">➕</span>
+                        <span className="action-icon"><FontAwesomeIcon icon={faUserPlus} /></span>
                         <span className="action-text">Add Students</span>
                     </a>
                     <a href="/school/students" className="action-card">
-                        <span className="action-icon">📤</span>
+                        <span className="action-icon"><FontAwesomeIcon icon={faFileImport} /></span>
                         <span className="action-text">Import Excel</span>
                     </a>
                     <a href="/school/tests" className="action-card">
-                        <span className="action-icon">🔗</span>
+                        <span className="action-icon"><FontAwesomeIcon icon={faLink} /></span>
                         <span className="action-text">Get Test Link</span>
                     </a>
                     <a href="/school/students" className="action-card">
-                        <span className="action-icon">📋</span>
+                        <span className="action-icon"><FontAwesomeIcon icon={faFileExport} /></span>
                         <span className="action-text">Export Access IDs</span>
                     </a>
                 </div>
@@ -186,11 +198,11 @@ const SchoolDashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
             >
-                <h3 className="card-title">📞 Contact Us</h3>
+                <h3 className="card-title"><FontAwesomeIcon icon={faPhone} /> Contact Us</h3>
                 <p className="text-muted mb-4">Need help? Reach out to our support team</p>
                 <div className="contact-info">
                     <div className="contact-item">
-                        <span className="contact-icon">✉️</span>
+                        <span className="contact-icon"><FontAwesomeIcon icon={faEnvelope} /></span>
                         <div>
                             <div className="contact-label">Email Support</div>
                             <a href="mailto:saurabh@jaagr.com" className="contact-value">
@@ -199,7 +211,7 @@ const SchoolDashboard = () => {
                         </div>
                     </div>
                     <div className="contact-item">
-                        <span className="contact-icon">📱</span>
+                        <span className="contact-icon"><FontAwesomeIcon icon={faPhone} /></span>
                         <div>
                             <div className="contact-label">Phone Support</div>
                             <a href="tel:+918373922112" className="contact-value">

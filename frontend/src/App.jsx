@@ -14,6 +14,7 @@ import SchoolAnalytics from './pages/school/SchoolAnalytics';
 import StudentLogin from './pages/student/StudentLogin';
 import StudentAssessment from './pages/student/StudentAssessment';
 import ThankYou from './pages/student/ThankYou';
+import Settings from './pages/Settings';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -46,6 +47,13 @@ function App() {
                 ) : (
                     <Login />
                 )
+            } />
+
+            {/* Shared Routes */}
+            <Route path="/settings" element={
+                <ProtectedRoute allowedRoles={['admin', 'school']}>
+                    <Settings />
+                </ProtectedRoute>
             } />
 
             {/* Student Routes - Public login, protected assessment */}

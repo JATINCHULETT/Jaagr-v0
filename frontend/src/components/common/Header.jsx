@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoon, faSun, faGear, faRightFromBracket, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
@@ -34,7 +36,7 @@ const Header = ({ title, subtitle }) => {
                     whileTap={{ scale: 0.95 }}
                     title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                 >
-                    {theme === 'light' ? '🌙' : '☀️'}
+                    <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} />
                 </motion.button>
 
                 {/* User Dropdown */}
@@ -49,7 +51,7 @@ const Header = ({ title, subtitle }) => {
                         <span className="header-user-name">
                             {user?.name || user?.schoolId || 'User'}
                         </span>
-                        <span className="header-dropdown-arrow">▼</span>
+                        <FontAwesomeIcon icon={faChevronDown} className="header-dropdown-arrow" />
                     </button>
 
                     <div className="dropdown-menu">
@@ -61,10 +63,10 @@ const Header = ({ title, subtitle }) => {
                         </div>
                         <div className="dropdown-divider"></div>
                         <button className="dropdown-item" onClick={() => navigate('/settings')}>
-                            ⚙️ Settings
+                            <FontAwesomeIcon icon={faGear} /> Settings
                         </button>
                         <button className="dropdown-item dropdown-item-danger" onClick={handleLogout}>
-                            🚪 Logout
+                            <FontAwesomeIcon icon={faRightFromBracket} /> Logout
                         </button>
                     </div>
                 </div>

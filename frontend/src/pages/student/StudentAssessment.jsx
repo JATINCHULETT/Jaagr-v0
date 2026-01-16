@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBullseye, faBrain, faHandshake, faMobileScreen, faCheck, faClock } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './StudentAssessment.css';
@@ -8,7 +10,7 @@ import './StudentAssessment.css';
 const QUESTIONS_PER_SECTION = 8;
 const TIME_PER_QUESTION = 30;
 
-const sectionEmojis = ['🎯', '💪', '🤝', '📱'];
+const sectionIcons = [faBullseye, faBrain, faHandshake, faMobileScreen];
 const sectionColors = ['#B993E9', '#D4BFFF', '#9B6DD4', '#C7A6F5'];
 
 const StudentAssessment = () => {
@@ -223,6 +225,20 @@ const StudentAssessment = () => {
 
     return (
         <div className="assessment-container">
+            {/* Background Animation */}
+            <ul className="circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+
             {/* Level Up Animation */}
             <AnimatePresence>
                 {showLevelUp && (
@@ -258,7 +274,7 @@ const StudentAssessment = () => {
                 <div className="assessment-header">
                     <div className="header-left">
                         <span className="level-badge" style={{ background: sectionColors[currentSection] }}>
-                            {sectionEmojis[currentSection]} Level {currentLevel}
+                            <FontAwesomeIcon icon={sectionIcons[currentSection]} /> Level {currentLevel}
                         </span>
                     </div>
                     <div className="header-center">
@@ -268,7 +284,7 @@ const StudentAssessment = () => {
                     </div>
                     <div className="header-right">
                         <div className={`timer ${timeLeft <= 10 ? 'warning' : ''} ${timeLeft <= 5 ? 'danger' : ''}`}>
-                            <span className="timer-icon">⏱️</span>
+                            <span className="timer-icon"><FontAwesomeIcon icon={faClock} /></span>
                             <span className="timer-value">{timeLeft}s</span>
                         </div>
                     </div>
@@ -283,7 +299,7 @@ const StudentAssessment = () => {
                                 className={`section-dot ${section < currentSection ? 'completed' : ''} ${section === currentSection ? 'active' : ''}`}
                                 style={{ background: section <= currentSection ? sectionColors[section] : undefined }}
                             >
-                                {section < currentSection ? '✓' : sectionEmojis[section]}
+                                {section < currentSection ? <FontAwesomeIcon icon={faCheck} /> : <FontAwesomeIcon icon={sectionIcons[section]} />}
                             </div>
                         ))}
                     </div>

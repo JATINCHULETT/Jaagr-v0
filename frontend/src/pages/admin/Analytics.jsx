@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartBar, faChartLine, faStopwatch, faBullseye, faFileExport } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import api from '../../services/api';
 import './Analytics.css';
@@ -193,7 +195,7 @@ const Analytics = () => {
                         onClick={handleExport}
                         whileHover={{ scale: 1.02 }}
                     >
-                        📥 Export Excel
+                        <FontAwesomeIcon icon={faFileExport} /> Export Excel
                     </motion.button>
                 </div>
             </div>
@@ -212,7 +214,7 @@ const Analytics = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                         >
-                            <div className="stat-icon">📊</div>
+                            <div className="stat-icon"><FontAwesomeIcon icon={faChartBar} /></div>
                             <div className="stat-value">{data?.totalSubmissions || 0}</div>
                             <div className="stat-label">Total Submissions</div>
                         </motion.div>
@@ -223,7 +225,7 @@ const Analytics = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
                         >
-                            <div className="stat-icon">📈</div>
+                            <div className="stat-icon"><FontAwesomeIcon icon={faChartLine} /></div>
                             <div className="stat-value">{data?.avgScore || 0}</div>
                             <div className="stat-label">Avg Total Score</div>
                         </motion.div>
@@ -234,7 +236,7 @@ const Analytics = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
                         >
-                            <div className="stat-icon">⏱️</div>
+                            <div className="stat-icon"><FontAwesomeIcon icon={faStopwatch} /></div>
                             <div className="stat-value">{Math.round((data?.avgTimeTaken || 0) / 60)}m</div>
                             <div className="stat-label">Avg Time Taken</div>
                         </motion.div>
@@ -245,7 +247,7 @@ const Analytics = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <div className="stat-icon">🎯</div>
+                            <div className="stat-icon"><FontAwesomeIcon icon={faBullseye} /></div>
                             <div className="stat-value">
                                 {data?.bucketDistribution?.['Skill Support Needed'] || 0}
                             </div>

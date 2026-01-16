@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUsersGear, faRotateRight, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import api from '../../services/api';
 import './SchoolTests.css';
@@ -248,14 +250,14 @@ const SchoolTests = () => {
                                         onClick={handleAssignToSelected}
                                         disabled={assigning}
                                     >
-                                        ✅ Assign to {selectedStudents.length}
+                                        <FontAwesomeIcon icon={faCheck} /> Assign to {selectedStudents.length}
                                     </button>
                                     <button
                                         className="btn btn-danger btn-sm"
                                         onClick={handleUnassignFromSelected}
                                         disabled={assigning}
                                     >
-                                        ❌ Unassign from {selectedStudents.length}
+                                        <FontAwesomeIcon icon={faXmark} /> Unassign from {selectedStudents.length}
                                     </button>
                                 </>
                             )}
@@ -263,7 +265,7 @@ const SchoolTests = () => {
                                 className="btn btn-primary"
                                 onClick={() => setShowAssignModal(true)}
                             >
-                                ➕ Bulk Assign
+                                <FontAwesomeIcon icon={faUsersGear} /> Bulk Assign
                             </button>
                         </div>
                     </div>
@@ -365,7 +367,7 @@ const SchoolTests = () => {
                                                             className="btn btn-outline btn-sm"
                                                             onClick={() => handleResetTest(student._id)}
                                                         >
-                                                            🔄 Reset
+                                                            <FontAwesomeIcon icon={faRotateRight} /> Reset
                                                         </button>
                                                     )}
                                                 </td>

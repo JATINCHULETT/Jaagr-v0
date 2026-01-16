@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faKey, faSchool, faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import logoImg from '../assets/logo.png';
@@ -52,7 +54,7 @@ const Login = () => {
                     onClick={toggleTheme}
                     title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                 >
-                    {theme === 'light' ? '🌙' : '☀️'}
+                    <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} />
                 </button>
 
                 {/* Logo */}
@@ -75,13 +77,13 @@ const Login = () => {
                         className={`login-tab ${loginType === 'admin' ? 'active' : ''}`}
                         onClick={() => setLoginType('admin')}
                     >
-                        🔑 Admin
+                        <FontAwesomeIcon icon={faKey} /> Admin
                     </button>
                     <button
                         className={`login-tab ${loginType === 'school' ? 'active' : ''}`}
                         onClick={() => setLoginType('school')}
                     >
-                        🏫 School
+                        <FontAwesomeIcon icon={faSchool} /> School
                     </button>
                 </div>
 

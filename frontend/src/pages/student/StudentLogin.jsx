@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
@@ -71,7 +73,7 @@ const StudentLogin = () => {
                     className="theme-toggle-btn"
                     onClick={toggleTheme}
                 >
-                    {theme === 'light' ? '🌙' : '☀️'}
+                    <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} />
                 </button>
 
                 {/* JaagrMind Logo */}
