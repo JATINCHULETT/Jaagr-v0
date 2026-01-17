@@ -373,6 +373,7 @@ const SchoolManagement = () => {
                     >
                         {school.isBlocked && <div className="blocked-badge">BLOCKED</div>}
 
+                        {/* Header: Logo + Name */}
                         <div className="school-card-header">
                             <div className="school-card-avatar">
                                 {school.logo ? (
@@ -381,53 +382,27 @@ const SchoolManagement = () => {
                                     <span>{school.name[0]}</span>
                                 )}
                             </div>
-                            <div className="school-card-actions-grid">
-                                <button
-                                    className="action-btn"
-                                    onClick={() => openCredentialsModal(school)}
-                                >
-                                    <FontAwesomeIcon icon={faKey} />
-                                    <span>Credentials</span>
-                                </button>
-                                <button
-                                    className="action-btn"
-                                    onClick={() => openTestsModal(school)}
-                                >
-                                    <FontAwesomeIcon icon={faClipboardList} />
-                                    <span>Tests</span>
-                                </button>
-                                <button
-                                    className="action-btn primary"
-                                    onClick={() => openAnalyticsModal(school)}
-                                >
-                                    <FontAwesomeIcon icon={faChartLine} />
-                                    <span>Analytics</span>
-                                </button>
-                                <button
-                                    className="action-btn"
-                                    onClick={() => openModal(school)}
-                                >
-                                    <FontAwesomeIcon icon={faPenToSquare} />
-                                    <span>Edit</span>
-                                </button>
-                                <button
-                                    className={`action-btn ${school.isBlocked ? 'success' : 'warning'}`}
-                                    onClick={() => handleToggleBlock(school)}
-                                >
-                                    <FontAwesomeIcon icon={school.isBlocked ? faCircleCheck : faBan} />
-                                    <span>{school.isBlocked ? 'Unblock' : 'Block'}</span>
-                                </button>
-                                <button
-                                    className="action-btn danger"
-                                    onClick={() => handleDelete(school._id)}
-                                >
-                                    <FontAwesomeIcon icon={faTrash} />
-                                    <span>Delete</span>
-                                </button>
+                            <div className="school-card-info">
+                                <h3 className="school-card-name">{school.name}</h3>
+                                <span className="school-card-id">{school.schoolId}</span>
                             </div>
                         </div>
 
-                        <h3 className="school-card-name">{school.name}</h3>
+                        {/* Stats Row */}
+                        <div className="school-card-stats">
+                            <div className="school-stat">
+                                <span className="school-stat-value">{school.studentCount || 0}</span>
+                                <span className="school-stat-label">Students</span>
+                            </div>
+                            <div className="school-stat">
+                                <span className="school-stat-value">{school.submissionCount || 0}</span>
+                                <span className="school-stat-label">Submissions</span>
+                            </div>
+                            <div className="school-stat">
+                                <span className="school-stat-value">{school.assignedTests?.length || 0}</span>
+                                <span className="school-stat-label">Tests</span>
+                            </div>
+                        </div>
 
                         {/* Credentials Display */}
                         <div className="credentials-box">
@@ -445,21 +420,53 @@ const SchoolManagement = () => {
                             </div>
                         </div>
 
-                        <div className="school-card-stats">
-                            <div className="school-stat">
-                                <span className="school-stat-value">{school.studentCount || 0}</span>
-                                <span className="school-stat-label">Students</span>
-                            </div>
-                            <div className="school-stat">
-                                <span className="school-stat-value">{school.submissionCount || 0}</span>
-                                <span className="school-stat-label">Submissions</span>
-                            </div>
-                            <div className="school-stat">
-                                <span className="school-stat-value">{school.assignedTests?.length || 0}</span>
-                                <span className="school-stat-label">Tests</span>
-                            </div>
+                        {/* Action Buttons - Clean Horizontal Layout */}
+                        <div className="school-card-actions">
+                            <button
+                                className="action-btn"
+                                onClick={() => openCredentialsModal(school)}
+                                title="Edit Credentials"
+                            >
+                                <FontAwesomeIcon icon={faKey} />
+                            </button>
+                            <button
+                                className="action-btn"
+                                onClick={() => openTestsModal(school)}
+                                title="Manage Tests"
+                            >
+                                <FontAwesomeIcon icon={faClipboardList} />
+                            </button>
+                            <button
+                                className="action-btn analytics"
+                                onClick={() => openAnalyticsModal(school)}
+                                title="View Analytics"
+                            >
+                                <FontAwesomeIcon icon={faChartLine} />
+                            </button>
+                            <button
+                                className="action-btn"
+                                onClick={() => openModal(school)}
+                                title="Edit School"
+                            >
+                                <FontAwesomeIcon icon={faPenToSquare} />
+                            </button>
+                            <button
+                                className={`action-btn ${school.isBlocked ? 'success' : 'warning'}`}
+                                onClick={() => handleToggleBlock(school)}
+                                title={school.isBlocked ? 'Unblock' : 'Block'}
+                            >
+                                <FontAwesomeIcon icon={school.isBlocked ? faCircleCheck : faBan} />
+                            </button>
+                            <button
+                                className="action-btn danger"
+                                onClick={() => handleDelete(school._id)}
+                                title="Delete School"
+                            >
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
                         </div>
 
+                        {/* Footer */}
                         <div className="school-card-footer">
                             <span className={`badge ${school.isDataVisibleToSchool ? 'badge-success' : 'badge-warning'}`}>
                                 {school.isDataVisibleToSchool ? 'Data Visible' : 'Data Hidden'}
