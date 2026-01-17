@@ -1,8 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const Admin = require('../models/Admin');
 const School = require('../models/School');
 const Assessment = require('../models/Assessment');
@@ -12,37 +9,10 @@ const ArchivedData = require('../models/ArchivedData');
 const { protect, isAdmin, generateToken } = require('../middleware/auth');
 const { generateSchoolId, generateSchoolPassword } = require('../utils/idGenerator');
 const { exportSubmissionsToExcel, calculateAnalytics } = require('../utils/exportData');
+const { logoUpload, deleteFromS3 } = require('../utils/s3Upload');
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '..', 'uploads', 'logos');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for logo uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|svg|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (extname && mimetype) {
-            return cb(null, true);
-        }
-        cb(new Error('Only image files are allowed'));
-    }
-});
+// Use S3 upload for logos
+const upload = logoUpload;
 
 // @route   POST /api/admin/login
 // @desc    Admin login
@@ -383,7 +353,7 @@ router.post('/schools', protect, isAdmin, upload.single('logo'), async (req, res
             password: plainPassword,
             plainPassword: plainPassword,
             isDataVisibleToSchool: isDataVisibleToSchool === 'true' || isDataVisibleToSchool === true,
-            logo: req.file ? `/uploads/logos/${req.file.filename}` : '',
+            logo: req.file ? req.file.location : '',
             assignedTests: defaultAssessment ? [defaultAssessment._id] : []
         });
 
@@ -428,7 +398,11 @@ router.put('/schools/:id', protect, isAdmin, upload.single('logo'), async (req, 
         school.isDataVisibleToSchool = isDataVisibleToSchool === 'true' || isDataVisibleToSchool === true;
 
         if (req.file) {
-            school.logo = `/uploads/logos/${req.file.filename}`;
+            // Delete old logo from S3 if exists
+            if (school.logo && school.logo.includes('amazonaws.com')) {
+                deleteFromS3(school.logo);
+            }
+            school.logo = req.file.location;
         }
 
         let newPassword = null;
