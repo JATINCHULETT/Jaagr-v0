@@ -126,6 +126,43 @@
     justify-content: flex-end;
 }
 
+/* Profile Edit Form */
+.edit-profile-btn {
+    margin-left: auto;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+.card-header h2 {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-edit-form {
+    padding: 24px;
+}
+
+.profile-edit-form .form-group {
+    margin-bottom: 20px;
+}
+
+.profile-edit-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.profile-actions {
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.profile-message {
+    margin: 16px 24px 0;
+}
+
 /* Dark Mode Overrides */
 [data-theme="dark"] .settings-card {
     background: var(--primary-bg);

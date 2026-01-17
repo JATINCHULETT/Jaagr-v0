@@ -7,6 +7,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import SchoolManagement from './pages/admin/SchoolManagement';
 import AssessmentManagement from './pages/admin/AssessmentManagement';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminManagement from './pages/admin/AdminManagement';
 import SchoolDashboard from './pages/school/SchoolDashboard';
 import StudentManagement from './pages/school/StudentManagement';
 import SchoolTests from './pages/school/SchoolTests';
@@ -84,6 +85,11 @@ function App() {
             <Route path="/admin/analytics" element={
                 <ProtectedRoute allowedRoles={['admin']}>
                     <AdminAnalytics />
+                </ProtectedRoute>
+            } />
+            <Route path="/admin/admins" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminManagement />
                 </ProtectedRoute>
             } />
 

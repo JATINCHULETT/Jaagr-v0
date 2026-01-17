@@ -8,7 +8,8 @@ import {
     faChartLine,
     faUserGraduate,
     faFileLines,
-    faRightFromBracket
+    faRightFromBracket,
+    faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import logoImg from '../../assets/logo.png';
@@ -19,6 +20,7 @@ const adminMenuItems = [
     { path: '/admin/schools', icon: faSchool, label: 'Schools' },
     { path: '/admin/assessments', icon: faClipboardList, label: 'Assessments' },
     { path: '/admin/analytics', icon: faChartLine, label: 'Analytics' },
+    { path: '/admin/admins', icon: faUserShield, label: 'Admin Management' },
 ];
 
 const schoolMenuItems = [

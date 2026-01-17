@@ -80,6 +80,215 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// @route   PUT /api/admin/change-password
+// @desc    Change admin's own password
+// @access  Admin
+router.put('/change-password', protect, isAdmin, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: 'Current and new password are required' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'New password must be at least 6 characters' });
+        }
+
+        const admin = await Admin.findById(req.user._id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Verify current password
+        const isMatch = await admin.matchPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+
+        // Update password
+        admin.password = newPassword;
+        await admin.save();
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   PUT /api/admin/profile
+// @desc    Update admin's own profile (name, email)
+// @access  Admin
+router.put('/profile', protect, isAdmin, async (req, res) => {
+    try {
+        const { name, email } = req.body;
+
+        const admin = await Admin.findById(req.user._id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Check if new email is unique
+        if (email && email.toLowerCase() !== admin.email) {
+            const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+            if (existingAdmin) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+            admin.email = email.toLowerCase();
+        }
+
+        if (name) {
+            admin.name = name;
+        }
+
+        await admin.save();
+
+        res.json({
+            _id: admin._id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role,
+            message: 'Profile updated successfully'
+        });
+    } catch (error) {
+        console.error('Update profile error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   GET /api/admin/admins
+// @desc    Get all admin accounts
+// @access  Admin
+router.get('/admins', protect, isAdmin, async (req, res) => {
+    try {
+        const admins = await Admin.find()
+            .select('-password')
+            .sort({ createdAt: -1 });
+
+        res.json(admins);
+    } catch (error) {
+        console.error('Get admins error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   POST /api/admin/admins
+// @desc    Create new admin account
+// @access  Admin
+router.post('/admins', protect, isAdmin, async (req, res) => {
+    try {
+        const { email, password, name, role } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        // Check if email already exists
+        const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+        if (existingAdmin) {
+            return res.status(400).json({ message: 'Admin with this email already exists' });
+        }
+
+        const admin = await Admin.create({
+            email: email.toLowerCase(),
+            password,
+            name: name || 'Company Admin',
+            role: role || 'admin'
+        });
+
+        res.status(201).json({
+            _id: admin._id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role,
+            createdAt: admin.createdAt,
+            message: 'Admin created successfully'
+        });
+    } catch (error) {
+        console.error('Create admin error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   PUT /api/admin/admins/:id
+// @desc    Update an admin account
+// @access  Admin
+router.put('/admins/:id', protect, isAdmin, async (req, res) => {
+    try {
+        const { email, name, role, password } = req.body;
+
+        const admin = await Admin.findById(req.params.id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Check if new email is unique
+        if (email && email.toLowerCase() !== admin.email) {
+            const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
+            if (existingAdmin) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+            admin.email = email.toLowerCase();
+        }
+
+        if (name) admin.name = name;
+        if (role) admin.role = role;
+        if (password && password.length >= 6) {
+            admin.password = password;
+        }
+
+        await admin.save();
+
+        res.json({
+            _id: admin._id,
+            email: admin.email,
+            name: admin.name,
+            role: admin.role,
+            createdAt: admin.createdAt,
+            lastLogin: admin.lastLogin,
+            message: 'Admin updated successfully'
+        });
+    } catch (error) {
+        console.error('Update admin error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   DELETE /api/admin/admins/:id
+// @desc    Delete an admin account
+// @access  Admin
+router.delete('/admins/:id', protect, isAdmin, async (req, res) => {
+    try {
+        // Prevent self-deletion
+        if (req.params.id === req.user._id.toString()) {
+            return res.status(400).json({ message: 'You cannot delete your own account' });
+        }
+
+        const admin = await Admin.findById(req.params.id);
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found' });
+        }
+
+        // Prevent deleting the last admin
+        const adminCount = await Admin.countDocuments();
+        if (adminCount <= 1) {
+            return res.status(400).json({ message: 'Cannot delete the last admin account' });
+        }
+
+        await Admin.findByIdAndDelete(req.params.id);
+
+        res.json({ message: 'Admin deleted successfully' });
+    } catch (error) {
+        console.error('Delete admin error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // @route   GET /api/admin/dashboard
 // @desc    Get dashboard overview data
 // @access  Admin
