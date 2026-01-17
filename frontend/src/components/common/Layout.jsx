@@ -1,5 +1,6 @@
 import Sidebar from './Sidebar';
 import Header from './Header';
+import MobileNav from './MobileNav';
 import './Layout.css';
 
 const Layout = ({ children, title, subtitle }) => {
@@ -10,6 +11,7 @@ const Layout = ({ children, title, subtitle }) => {
             <main className="layout-main">
                 {children}
             </main>
+            <MobileNav />
         </div>
     );
 };
