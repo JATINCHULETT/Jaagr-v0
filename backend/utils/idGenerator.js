@@ -32,7 +32,7 @@ const generateSchoolPassword = () => {
 };
 
 // Generate unique student access ID
-// Format: [SCHOOL_ABBREV]-[YEAR]-[RANDOM_HEX] (e.g., CHS-2026-A9B2)
+// Format: [SCHOOL_ABBREV]-[YEAR]-[RANDOM_16_CHARS] (e.g., CHS-2026-A9B2F3E72C4D8F1A)
 const generateAccessId = (schoolName) => {
     // Get school abbreviation (first 3 letters of each word, max 4 chars)
     const words = schoolName.split(' ').filter(w => w.length > 0);
@@ -47,10 +47,12 @@ const generateAccessId = (schoolName) => {
     // Get current year
     const year = new Date().getFullYear();
 
-    // Generate random hex (4 characters)
-    const hex = uuidv4().split('-')[0].substring(0, 4).toUpperCase();
+    // Generate stronger random ID (16 characters)
+    // Uses full UUID for maximum entropy
+    const uuid = uuidv4().replace(/-/g, '');
+    const randomPart = uuid.substring(0, 16).toUpperCase();
 
-    return `${abbrev}-${year}-${hex}`;
+    return `${abbrev}-${year}-${randomPart}`;
 };
 
 // Generate bulk access IDs (ensures uniqueness)

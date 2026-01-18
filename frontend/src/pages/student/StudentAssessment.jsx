@@ -204,9 +204,7 @@ const StudentAssessment = () => {
             const response = await api.get('/api/student/tests');
             const availableTests = response.data.tests.filter(t => !t.isCompleted);
             setTests(availableTests);
-            if (availableTests.length === 1) {
-                handleTestSelect(availableTests[0]);
-            }
+            // Always show welcome page with test selection, even for single test
         } catch (error) {
             console.error('Error fetching tests:', error);
         } finally {
