@@ -77,8 +77,8 @@ const seedDatabase = async () => {
         }
 
         // Create default admin if not exists
-        const adminEmail = process.env.ADMIN_EMAIL || 'admin@jaagrmind.com';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'JaagrMind@2026';
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
         const existingAdmin = await Admin.findOne({ email: adminEmail });
         if (!existingAdmin) {
