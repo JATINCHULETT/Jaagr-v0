@@ -15,6 +15,7 @@ import {
     faPlus
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
+import Pagination from '../../components/common/Pagination';
 import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './SchoolManagement.css';
@@ -42,6 +43,7 @@ const SchoolManagement = () => {
     const [analyticsData, setAnalyticsData] = useState(null);
     const [analyticsLoading, setAnalyticsLoading] = useState(false);
     const [analyticsFilters, setAnalyticsFilters] = useState({ class: '', section: '', assessmentId: '', search: '' });
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
     const [formData, setFormData] = useState({
         name: '',
@@ -57,10 +59,16 @@ const SchoolManagement = () => {
         fetchAssessments();
     }, []);
 
-    const fetchSchools = async () => {
+    const fetchSchools = async (page = 1) => {
         try {
-            const response = await api.get('/api/admin/schools');
-            setSchools(response.data);
+            const response = await api.get(`/api/admin/schools?page=${page}&limit=10`);
+            // Handle both paginated and non-paginated responses for backwards compatibility
+            if (response.data.data) {
+                setSchools(response.data.data);
+                setPagination(response.data.pagination);
+            } else {
+                setSchools(response.data);
+            }
         } catch (error) {
             console.error('Error fetching schools:', error);
         } finally {

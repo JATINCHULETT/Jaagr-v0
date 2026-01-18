@@ -45,7 +45,8 @@ const AdminManagement = () => {
     const fetchAdmins = async () => {
         try {
             const response = await api.get('/api/admin/admins');
-            setAdmins(response.data);
+            // Handle both paginated { data, pagination } and legacy array responses
+            setAdmins(response.data.data || response.data);
         } catch (error) {
             console.error('Error fetching admins:', error);
             setMessage({ type: 'error', text: 'Failed to load admin accounts' });

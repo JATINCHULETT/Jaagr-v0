@@ -34,7 +34,8 @@ const StudentManagement = () => {
             if (filters.status) params.append('status', filters.status);
 
             const response = await api.get(`/api/school/students?${params}`);
-            setStudents(response.data);
+            // Handle both paginated { data, pagination } and legacy array responses
+            setStudents(response.data.data || response.data);
         } catch (error) {
             console.error('Error fetching students:', error);
         } finally {

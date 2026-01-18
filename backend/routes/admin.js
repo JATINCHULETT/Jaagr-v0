@@ -128,15 +128,32 @@ router.put('/profile', protect, isAdmin, async (req, res) => {
 });
 
 // @route   GET /api/admin/admins
-// @desc    Get all admin accounts
+// @desc    Get all admin accounts (with pagination)
 // @access  Admin
 router.get('/admins', protect, isAdmin, async (req, res) => {
     try {
-        const admins = await Admin.find()
-            .select('-password')
-            .sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-        res.json(admins);
+        const [admins, total] = await Promise.all([
+            Admin.find()
+                .select('-password')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Admin.countDocuments()
+        ]);
+
+        res.json({
+            data: admins,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error('Get admins error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -235,7 +252,7 @@ router.put('/admins/:id', protect, isAdmin, async (req, res) => {
 router.delete('/admins/:id', protect, isAdmin, async (req, res) => {
     try {
         // Prevent self-deletion
-        if (req.params.id === req.user._id.toString()) {
+        if (req.params.id === req.user.id.toString()) {
             return res.status(400).json({ message: 'You cannot delete your own account' });
         }
 
@@ -296,14 +313,23 @@ router.get('/dashboard', protect, isAdmin, async (req, res) => {
 });
 
 // @route   GET /api/admin/schools
-// @desc    Get all schools
+// @desc    Get all schools (with pagination)
 // @access  Admin
 router.get('/schools', protect, isAdmin, async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        // Get total count first
+        const total = await School.countDocuments({ isActive: true });
+
         const schools = await School.find({ isActive: true })
             .populate('assignedTests', 'title isDefault')
             .select('-password')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
         // Get student count per school
         const schoolsWithStats = await Promise.all(
@@ -323,7 +349,15 @@ router.get('/schools', protect, isAdmin, async (req, res) => {
             })
         );
 
-        res.json(schoolsWithStats);
+        res.json({
+            data: schoolsWithStats,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error('Get schools error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -1045,6 +1079,110 @@ router.put('/schools/:id/block', protect, isAdmin, async (req, res) => {
         });
     } catch (error) {
         console.error('Block school error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   GET /api/admin/student/:id/details
+// @desc    Get detailed student info with all submissions and answers
+// @access  Admin
+router.get('/student/:id/details', protect, isAdmin, async (req, res) => {
+    try {
+        const student = await Student.findById(req.params.id)
+            .populate('schoolId', 'name schoolId');
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        // Section name helper
+        const getSectionName = (code) => {
+            const sections = {
+                'A': 'Focus & Attention',
+                'B': 'Self-Esteem & Inner Confidence',
+                'C': 'Social Confidence & Interaction',
+                'D': 'Digital Hygiene & Self-Control'
+            };
+            return sections[code] || code;
+        };
+
+        // Get all submissions for this student with full details
+        const submissions = await Submission.find({
+            studentId: student._id
+        })
+            .populate('assessmentId', 'title questions customSections')
+            .sort({ submittedAt: -1 });
+
+        // Format submissions with detailed answer breakdown
+        const detailedSubmissions = submissions.map(sub => {
+            const assessment = sub.assessmentId;
+            const questions = assessment?.questions || [];
+
+            // Map answers to questions
+            const answersWithQuestions = (sub.answers || []).map((answer, index) => {
+                const question = questions[answer?.questionIndex ?? index];
+                return {
+                    questionIndex: (answer?.questionIndex ?? index) + 1,
+                    questionText: question?.text || `Question ${index + 1}`,
+                    section: question?.section || 'Unknown',
+                    sectionName: getSectionName(question?.section),
+                    selectedOption: answer?.selectedOption ?? null,
+                    options: question?.options || [],
+                    score: answer?.marks ?? 0,
+                    isReverseScored: question?.isReverseScored || false
+                };
+            });
+
+            // Group answers by section
+            const answersBySection = {};
+            answersWithQuestions.forEach(a => {
+                if (!answersBySection[a.section]) {
+                    answersBySection[a.section] = {
+                        sectionName: a.sectionName,
+                        answers: [],
+                        totalScore: 0
+                    };
+                }
+                answersBySection[a.section].answers.push(a);
+                answersBySection[a.section].totalScore += a.score;
+            });
+
+            return {
+                _id: sub._id,
+                assessmentId: assessment?._id,
+                assessmentTitle: assessment?.title || 'Unknown Assessment',
+                totalScore: sub.totalScore,
+                sectionScores: sub.sectionScores,
+                sectionBuckets: sub.sectionBuckets,
+                assignedBucket: sub.assignedBucket,
+                primarySkillArea: sub.primarySkillArea,
+                secondarySkillArea: sub.secondarySkillArea,
+                timeTaken: sub.timeTaken,
+                totalInactivityTime: sub.totalInactivityTime,
+                moodCheck: sub.moodCheck,
+                status: sub.status,
+                submittedAt: sub.submittedAt,
+                answersWithQuestions,
+                answersBySection
+            };
+        });
+
+        res.json({
+            student: {
+                _id: student._id,
+                name: student.name,
+                accessId: student.accessId,
+                class: student.class,
+                section: student.section,
+                rollNo: student.rollNo,
+                school: student.schoolId,
+                createdAt: student.createdAt
+            },
+            submissions: detailedSubmissions,
+            totalSubmissions: detailedSubmissions.length
+        });
+    } catch (error) {
+        console.error('Admin student details error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });

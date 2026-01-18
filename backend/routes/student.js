@@ -336,6 +336,18 @@ router.post('/save-progress', protect, isStudent, async (req, res) => {
             return res.status(400).json({ message: 'Assessment ID is required' });
         }
 
+        // Format answers to match schema - add questionIndex and default marks for incomplete
+        const formattedAnswers = (answers || []).map((answer, index) => {
+            if (!answer) return null; // Unanswered question
+            return {
+                questionIndex: index,
+                selectedOption: answer.selectedOption ?? answer ?? 0,
+                marks: 0, // Will be calculated on completion
+                timeTakenForQuestion: answer.timeTaken || answer.timeTakenForQuestion || 0,
+                section: 'A' // Placeholder, will be calculated on completion
+            };
+        }).filter(a => a !== null); // Remove unanswered
+
         // Check for existing incomplete submission
         let submission = await Submission.findOne({
             studentId: student._id,
@@ -345,11 +357,12 @@ router.post('/save-progress', protect, isStudent, async (req, res) => {
 
         if (submission) {
             // Update existing incomplete submission
-            submission.answers = answers || submission.answers;
-            submission.lastQuestionIndex = lastQuestionIndex || submission.lastQuestionIndex;
-            submission.totalInactivityTime = totalInactivityTime || submission.totalInactivityTime;
-            submission.timeTaken = timeTaken || submission.timeTaken;
+            submission.answers = formattedAnswers;
+            submission.lastQuestionIndex = lastQuestionIndex ?? submission.lastQuestionIndex;
+            submission.totalInactivityTime = totalInactivityTime ?? submission.totalInactivityTime;
+            submission.timeTaken = timeTaken ?? submission.timeTaken;
             submission.status = 'incomplete';
+            if (moodCheck) submission.moodCheck = moodCheck;
             await submission.save();
             console.log('Updated existing incomplete submission:', submission._id);
         } else {
@@ -358,11 +371,11 @@ router.post('/save-progress', protect, isStudent, async (req, res) => {
                 studentId: student._id,
                 schoolId: student.schoolId,
                 assessmentId,
-                answers: answers || [],
+                answers: formattedAnswers,
                 lastQuestionIndex: lastQuestionIndex || 0,
                 totalInactivityTime: totalInactivityTime || 0,
                 timeTaken: timeTaken || 0,
-                moodCheck: moodCheck || null,
+                moodCheck: moodCheck || {},
                 consentGiven: consentGiven || false,
                 status: 'incomplete'
             });

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -70,6 +70,9 @@ const StudentAssessment = () => {
         endTime: INACTIVITY_END_DEFAULT
     });
 
+    // Track last activity time to properly detect inactivity
+    const lastActivityTimeRef = useRef(Date.now());
+
     useEffect(() => {
         fetchTests();
     }, []);
@@ -93,12 +96,60 @@ const StudentAssessment = () => {
     }, [flowStep]);
 
     // Inactivity timer effect - hidden from user
+    const isEndingRef = useRef(false);
+
+    // Activity detection - reset inactivity on ANY user interaction (throttled)
     useEffect(() => {
         if (!assessment || flowStep !== 'assessment') return;
 
+        let lastHandledTime = 0;
+        const THROTTLE_MS = 500; // Only handle activity every 500ms to prevent over-triggering
+
+        const handleActivity = () => {
+            const now = Date.now();
+            // Throttle: only handle activity if 500ms has passed since last handled
+            if (now - lastHandledTime < THROTTLE_MS) return;
+            lastHandledTime = now;
+
+            lastActivityTimeRef.current = now;
+            // Reset BOTH inactivity counters when user is active
+            setCurrentInactivityTime(0);
+            setTotalInactivityTime(0); // Critical: reset total so test doesn't end after activity
+            // Hide inactivity alert if user becomes active
+            if (showInactivityAlert) {
+                setShowInactivityAlert(false);
+            }
+        };
+
+        // Listen for any user activity
+        window.addEventListener('mousemove', handleActivity, { passive: true });
+        window.addEventListener('mousedown', handleActivity);
+        window.addEventListener('keydown', handleActivity);
+        window.addEventListener('touchstart', handleActivity, { passive: true });
+        window.addEventListener('scroll', handleActivity, { passive: true });
+
+        return () => {
+            window.removeEventListener('mousemove', handleActivity);
+            window.removeEventListener('mousedown', handleActivity);
+            window.removeEventListener('keydown', handleActivity);
+            window.removeEventListener('touchstart', handleActivity);
+            window.removeEventListener('scroll', handleActivity);
+        };
+    }, [assessment, flowStep, showInactivityAlert]);
+
+    // Inactivity timer - checks every second if user has been inactive
+    useEffect(() => {
+        if (!assessment || flowStep !== 'assessment') return;
+
+        // Reset ending flag when assessment starts
+        isEndingRef.current = false;
+
         const timer = setInterval(() => {
-            // Only count inactivity if no answer selected for current question
-            if (!answers[currentQuestion]) {
+            const now = Date.now();
+            const secondsSinceActivity = Math.floor((now - lastActivityTimeRef.current) / 1000);
+
+            // Only count inactivity if user hasn't moved/clicked/typed in over 1 second
+            if (secondsSinceActivity >= 1) {
                 setCurrentInactivityTime(prev => {
                     const newTime = prev + 1;
 
@@ -110,21 +161,20 @@ const StudentAssessment = () => {
                     return newTime;
                 });
 
-                setTotalInactivityTime(prev => {
-                    const newTotal = prev + 1;
-
-                    // Auto-end test if total inactivity reaches limit
-                    if (newTotal >= inactivitySettings.endTime) {
-                        handleInactivityEnd();
-                    }
-
-                    return newTotal;
-                });
+                setTotalInactivityTime(prev => prev + 1);
             }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [assessment, currentQuestion, answers, flowStep, inactivitySettings, showInactivityAlert]);
+    }, [assessment, flowStep, inactivitySettings.alertTime, showInactivityAlert]);
+
+    // Separate effect to handle test end - prevents race conditions
+    useEffect(() => {
+        if (totalInactivityTime >= inactivitySettings.endTime && !isEndingRef.current && flowStep === 'assessment') {
+            isEndingRef.current = true;
+            handleInactivityEnd();
+        }
+    }, [totalInactivityTime, inactivitySettings.endTime, flowStep]);
 
     // Handle test end due to inactivity
     const handleInactivityEnd = async () => {

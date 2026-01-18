@@ -7,15 +7,16 @@ const answerSchema = new mongoose.Schema({
     },
     section: {
         type: String,
-        enum: ['A', 'B', 'C', 'D']
+        enum: ['A', 'B', 'C', 'D'],
+        default: 'A'
     },
     selectedOption: {
         type: Number,
-        required: true
+        default: 0
     },
     marks: {
         type: Number,
-        required: true
+        default: 0 // Not required for incomplete submissions
     },
     timeTakenForQuestion: {
         type: Number,

@@ -9,7 +9,7 @@ const Submission = require('../models/Submission');
 const ArchivedData = require('../models/ArchivedData');
 const { protect, isSchoolAdmin, generateToken } = require('../middleware/auth');
 const { generateAccessId, generateBulkAccessIds } = require('../utils/idGenerator');
-const { exportAccessIdsToExcel, calculateAnalytics } = require('../utils/exportData');
+const { exportAccessIdsToExcel, calculateAnalytics, getSectionName } = require('../utils/exportData');
 
 // Configure multer for Excel uploads
 const upload = multer({
@@ -113,22 +113,30 @@ router.get('/dashboard', protect, isSchoolAdmin, async (req, res) => {
 });
 
 // @route   GET /api/school/students
-// @desc    Get all students with filters
+// @desc    Get all students with filters (with pagination)
 // @access  School Admin
 router.get('/students', protect, isSchoolAdmin, async (req, res) => {
     try {
-        const { class: className, section, status } = req.query;
+        const { class: className, section, status, page: pageParam, limit: limitParam } = req.query;
+        const page = parseInt(pageParam) || 1;
+        const limit = parseInt(limitParam) || 20;
+        const skip = (page - 1) * limit;
 
         let query = { schoolId: req.school._id, isActive: true };
 
         if (className) query.class = className;
         if (section) query.section = section;
 
+        // Get total count for this query
+        let total = await Student.countDocuments(query);
+
         let students = await Student.find(query)
             .populate('testStatus.assessmentId', 'title')
-            .sort({ class: 1, section: 1, rollNo: 1, name: 1 });
+            .sort({ class: 1, section: 1, rollNo: 1, name: 1 })
+            .skip(skip)
+            .limit(limit);
 
-        // Filter by completion status if requested
+        // Filter by completion status if requested (done after pagination for consistency)
         if (status === 'completed') {
             students = students.filter(s =>
                 s.testStatus.some(t => t.isCompleted)
@@ -139,7 +147,15 @@ router.get('/students', protect, isSchoolAdmin, async (req, res) => {
             );
         }
 
-        res.json(students);
+        res.json({
+            data: students,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error('Get students error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -828,6 +844,101 @@ router.get('/students-analytics', protect, isSchoolAdmin, async (req, res) => {
         });
     } catch (error) {
         console.error('School students analytics error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   GET /api/school/student/:id/details
+// @desc    Get detailed student info with all submissions and answers
+// @access  School Admin
+router.get('/student/:id/details', protect, isSchoolAdmin, async (req, res) => {
+    try {
+        const student = await Student.findOne({
+            _id: req.params.id,
+            schoolId: req.school._id,
+            isActive: true
+        });
+
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        // Get all submissions for this student with full details
+        const submissions = await Submission.find({
+            studentId: student._id
+        })
+            .populate('assessmentId', 'title questions customSections')
+            .sort({ submittedAt: -1 });
+
+        // Format submissions with detailed answer breakdown
+        const detailedSubmissions = submissions.map(sub => {
+            const assessment = sub.assessmentId;
+            const questions = assessment?.questions || [];
+
+            // Map answers to questions
+            const answersWithQuestions = (sub.answers || []).map((answer, index) => {
+                const question = questions[answer?.questionIndex ?? index];
+                return {
+                    questionIndex: (answer?.questionIndex ?? index) + 1,
+                    questionText: question?.text || `Question ${index + 1}`,
+                    section: question?.section || 'Unknown',
+                    sectionName: getSectionName(question?.section),
+                    selectedOption: answer?.selectedOption ?? null,
+                    options: question?.options || [],
+                    score: answer?.marks ?? 0,
+                    isReverseScored: question?.isReverseScored || false
+                };
+            });
+
+            // Group answers by section
+            const answersBySection = {};
+            answersWithQuestions.forEach(a => {
+                if (!answersBySection[a.section]) {
+                    answersBySection[a.section] = {
+                        sectionName: a.sectionName,
+                        answers: [],
+                        totalScore: 0
+                    };
+                }
+                answersBySection[a.section].answers.push(a);
+                answersBySection[a.section].totalScore += a.score;
+            });
+
+            return {
+                _id: sub._id,
+                assessmentId: assessment?._id,
+                assessmentTitle: assessment?.title || 'Unknown Assessment',
+                totalScore: sub.totalScore,
+                sectionScores: sub.sectionScores,
+                sectionBuckets: sub.sectionBuckets,
+                assignedBucket: sub.assignedBucket,
+                primarySkillArea: sub.primarySkillArea,
+                secondarySkillArea: sub.secondarySkillArea,
+                timeTaken: sub.timeTaken,
+                totalInactivityTime: sub.totalInactivityTime,
+                moodCheck: sub.moodCheck,
+                status: sub.status,
+                submittedAt: sub.submittedAt,
+                answersWithQuestions,
+                answersBySection
+            };
+        });
+
+        res.json({
+            student: {
+                _id: student._id,
+                name: student.name,
+                accessId: student.accessId,
+                class: student.class,
+                section: student.section,
+                rollNo: student.rollNo,
+                createdAt: student.createdAt
+            },
+            submissions: detailedSubmissions,
+            totalSubmissions: detailedSubmissions.length
+        });
+    } catch (error) {
+        console.error('Student details error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
