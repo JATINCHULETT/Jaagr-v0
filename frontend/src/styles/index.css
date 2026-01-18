@@ -426,6 +426,46 @@ select.form-input {
   cursor: pointer;
 }
 
+/* Password Input with Toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 48px;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary-purple);
+  background: var(--primary-bg);
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+  color: var(--primary-purple);
+}
+
 /* Tables */
 .table-container {
   overflow-x: auto;
@@ -1055,16 +1095,34 @@ tr:hover td {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 0.9rem;
   color: var(--text-dark);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.dropdown-item:last-child {
+  margin-bottom: 0;
+}
+
+.dropdown-item svg {
+  width: 16px;
+  color: var(--text-muted);
 }
 
 .dropdown-item:hover {
   background: var(--primary-bg);
+}
+
+.dropdown-item:hover svg {
+  color: var(--primary-purple);
 }
 
 /* Auth Pages */

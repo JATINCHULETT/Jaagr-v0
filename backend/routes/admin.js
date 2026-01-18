@@ -619,7 +619,7 @@ router.get('/schools/:id/students-analytics', protect, isAdmin, async (req, res)
 router.get('/assessments', protect, isAdmin, async (req, res) => {
     try {
         const assessments = await Assessment.find({ isActive: true })
-            .select('title description isDefault timePerQuestion questions buckets customSections createdAt')
+            .select('title description isDefault inactivityAlertTime inactivityEndTime questions buckets customSections createdAt')
             .sort({ isDefault: -1, createdAt: -1 });
 
         const assessmentsWithStats = assessments.map(a => ({
@@ -639,13 +639,13 @@ router.get('/assessments', protect, isAdmin, async (req, res) => {
 // @access  Admin
 router.post('/assessments', protect, isAdmin, async (req, res) => {
     try {
-        const { title, description, timePerQuestion, totalTime, questions, buckets, customSections } = req.body;
+        const { title, description, inactivityAlertTime, inactivityEndTime, questions, buckets, customSections } = req.body;
 
         const assessment = await Assessment.create({
             title,
             description,
-            timePerQuestion: timePerQuestion || 30,
-            totalTime: totalTime || 15,
+            inactivityAlertTime: inactivityAlertTime || 40,
+            inactivityEndTime: inactivityEndTime || 120,
             questions,
             buckets,
             customSections: customSections || [],
@@ -664,7 +664,7 @@ router.post('/assessments', protect, isAdmin, async (req, res) => {
 // @access  Admin
 router.put('/assessments/:id', protect, isAdmin, async (req, res) => {
     try {
-        const { title, description, timePerQuestion, totalTime, questions, buckets, customSections } = req.body;
+        const { title, description, inactivityAlertTime, inactivityEndTime, questions, buckets, customSections } = req.body;
 
         const assessment = await Assessment.findById(req.params.id);
         if (!assessment) {
@@ -673,8 +673,8 @@ router.put('/assessments/:id', protect, isAdmin, async (req, res) => {
 
         assessment.title = title || assessment.title;
         assessment.description = description || assessment.description;
-        assessment.timePerQuestion = timePerQuestion || assessment.timePerQuestion;
-        assessment.totalTime = totalTime || assessment.totalTime;
+        assessment.inactivityAlertTime = inactivityAlertTime || assessment.inactivityAlertTime;
+        assessment.inactivityEndTime = inactivityEndTime || assessment.inactivityEndTime;
 
         if (questions) assessment.questions = questions;
         if (buckets) assessment.buckets = buckets;

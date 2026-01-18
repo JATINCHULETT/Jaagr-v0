@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsersGear, faRotateRight, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
+import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './SchoolTests.css';
 
 const SchoolTests = () => {
+    const toast = useToast();
     const [tests, setTests] = useState([]);
     const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,7 +81,7 @@ const SchoolTests = () => {
             setCopiedLink(test._id);
             setTimeout(() => setCopiedLink(null), 2000);
         } catch (error) {
-            alert('Error copying link');
+            toast.error('Error copying link');
         }
     };
 
@@ -93,7 +95,7 @@ const SchoolTests = () => {
             });
             fetchTestStatus(selectedTest._id, filterClass, filterSection);
         } catch (error) {
-            alert('Error resetting test');
+            toast.error('Error resetting test');
         }
     };
 
@@ -107,11 +109,11 @@ const SchoolTests = () => {
                 targetClass: assignTarget.class || undefined,
                 targetSection: assignTarget.section || undefined
             });
-            alert('Test assigned successfully!');
+            toast.success('Test assigned successfully!');
             setShowAssignModal(false);
             fetchTestStatus(selectedTest._id, filterClass, filterSection);
         } catch (error) {
-            alert(error.response?.data?.message || 'Error assigning test');
+            toast.error(error.response?.data?.message || 'Error assigning test');
         } finally {
             setAssigning(false);
         }
@@ -126,10 +128,10 @@ const SchoolTests = () => {
                 targetType: 'students',
                 studentIds: selectedStudents
             });
-            alert(`Test assigned to ${selectedStudents.length} students!`);
+            toast.success(`Test assigned to ${selectedStudents.length} students!`);
             fetchTestStatus(selectedTest._id, filterClass, filterSection);
         } catch (error) {
-            alert(error.response?.data?.message || 'Error assigning test');
+            toast.error(error.response?.data?.message || 'Error assigning test');
         } finally {
             setAssigning(false);
         }
@@ -144,10 +146,10 @@ const SchoolTests = () => {
                 assessmentId: selectedTest._id,
                 studentIds: selectedStudents
             });
-            alert(`Test unassigned from selected students`);
+            toast.success('Test unassigned from selected students');
             fetchTestStatus(selectedTest._id, filterClass, filterSection);
         } catch (error) {
-            alert(error.response?.data?.message || 'Error unassigning test');
+            toast.error(error.response?.data?.message || 'Error unassigning test');
         } finally {
             setAssigning(false);
         }

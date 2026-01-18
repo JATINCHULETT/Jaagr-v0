@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExport, faFileImport, faUserPlus, faPenToSquare, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
+import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './StudentManagement.css';
 
 const StudentManagement = () => {
+    const toast = useToast();
     const [students, setStudents] = useState([]);
     const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ const StudentManagement = () => {
             fetchStudents();
             fetchClasses();
         } catch (error) {
-            alert(error.response?.data?.message || `Error ${editingStudent ? 'updating' : 'adding'} student`);
+            toast.error(error.response?.data?.message || `Error ${editingStudent ? 'updating' : 'adding'} student`);
         }
     };
 
@@ -91,23 +93,21 @@ const StudentManagement = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            let message = response.data.message;
+            toast.success(response.data.message);
 
-            // Show duplicates alert
+            // Show duplicates as warning
             if (response.data.duplicates && response.data.duplicates.length > 0) {
                 const dupNames = response.data.duplicates.slice(0, 5).map(d => d.name).join(', ');
                 const more = response.data.duplicates.length > 5 ? ` and ${response.data.duplicates.length - 5} more` : '';
-                message += `\n\n⚠️ Skipped ${response.data.duplicates.length} duplicate(s): ${dupNames}${more}`;
+                toast.warning(`Skipped ${response.data.duplicates.length} duplicate(s): ${dupNames}${more}`);
             }
 
-            // Show errors alert
+            // Show errors as error
             if (response.data.errors && response.data.errors.length > 0) {
                 const errRows = response.data.errors.slice(0, 5).map(e => `Row ${e.row}`).join(', ');
                 const more = response.data.errors.length > 5 ? ` and ${response.data.errors.length - 5} more` : '';
-                message += `\n\n❌ Errors in ${response.data.errors.length} row(s): ${errRows}${more}`;
+                toast.error(`Errors in ${response.data.errors.length} row(s): ${errRows}${more}`);
             }
-
-            alert(message);
             setShowImportModal(false);
             fetchStudents();
             fetchClasses();
@@ -117,10 +117,10 @@ const StudentManagement = () => {
 
             if (errorData?.duplicates && errorData.duplicates.length > 0) {
                 const dupNames = errorData.duplicates.slice(0, 5).map(d => d.name).join(', ');
-                message += `\n\n⚠️ All ${errorData.duplicates.length} student(s) are duplicates: ${dupNames}`;
+                message += ` - All ${errorData.duplicates.length} student(s) are duplicates: ${dupNames}`;
             }
 
-            alert(message);
+            toast.error(message);
         } finally {
             setImporting(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -155,7 +155,7 @@ const StudentManagement = () => {
             link.click();
             link.remove();
         } catch (error) {
-            alert('Error exporting access IDs');
+            toast.error('Error exporting access IDs');
         }
     };
 

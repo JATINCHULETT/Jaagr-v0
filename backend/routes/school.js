@@ -73,14 +73,10 @@ router.get('/dashboard', protect, isSchoolAdmin, async (req, res) => {
     try {
         const schoolId = req.school._id;
 
-        const [studentCount, completedCount, pendingCount] = await Promise.all([
+        const [studentCount, completedCount] = await Promise.all([
             Student.countDocuments({ schoolId, isActive: true }),
-            Submission.countDocuments({ schoolId }),
-            Student.countDocuments({
-                schoolId,
-                isActive: true,
-                'testStatus.isCompleted': { $ne: true }
-            })
+            // Count unique students who have completed submissions (status='complete')
+            Submission.distinct('studentId', { schoolId, status: 'complete' }).then(arr => arr.length)
         ]);
 
         // Get class breakdown
@@ -93,6 +89,9 @@ router.get('/dashboard', protect, isSchoolAdmin, async (req, res) => {
         const school = await School.findById(schoolId)
             .populate('assignedTests', 'title isDefault questionCount');
 
+        // Ensure pending is never negative
+        const pendingTests = Math.max(0, studentCount - completedCount);
+
         res.json({
             school: {
                 name: school.name,
@@ -102,7 +101,7 @@ router.get('/dashboard', protect, isSchoolAdmin, async (req, res) => {
             stats: {
                 totalStudents: studentCount,
                 completedTests: completedCount,
-                pendingTests: studentCount - completedCount
+                pendingTests: pendingTests
             },
             classStats,
             assignedTests: school.assignedTests
@@ -490,7 +489,8 @@ router.get('/available-assessments', protect, isSchoolAdmin, async (req, res) =>
                 });
                 const completedCount = await Submission.countDocuments({
                     schoolId: req.school._id,
-                    assessmentId: assessment._id
+                    assessmentId: assessment._id,
+                    status: 'complete'  // Only count complete submissions
                 });
                 return {
                     ...assessment.toObject(),
@@ -685,10 +685,11 @@ router.get('/analytics', protect, isSchoolAdmin, async (req, res) => {
         const filteredStudents = await Student.find(studentQuery).select('_id');
         const studentIds = filteredStudents.map(s => s._id);
 
-        // Get submissions for filtered students
+        // Get submissions for filtered students (only complete ones for analytics)
         const submissions = await Submission.find({
             schoolId: req.school._id,
-            studentId: { $in: studentIds }
+            studentId: { $in: studentIds },
+            status: 'complete'  // Only include complete submissions in analytics
         })
             .populate('studentId', 'name accessId class section')
             .sort({ submittedAt: -1 });

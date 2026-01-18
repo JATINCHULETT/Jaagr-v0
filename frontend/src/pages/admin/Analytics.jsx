@@ -4,10 +4,12 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartBar, faChartLine, faStopwatch, faBullseye, faFileExport } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
+import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './Analytics.css';
 
 const Analytics = () => {
+    const toast = useToast();
     const [data, setData] = useState(null);
     const [schools, setSchools] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -73,7 +75,7 @@ const Analytics = () => {
             link.remove();
         } catch (error) {
             console.error('Export error:', error);
-            alert('Error exporting data');
+            toast.error('Error exporting data');
         }
     };
 

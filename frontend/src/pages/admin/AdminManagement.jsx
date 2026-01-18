@@ -9,7 +9,9 @@ import {
     faSearch,
     faEnvelope,
     faKey,
-    faCrown
+    faCrown,
+    faEye,
+    faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
 import { useAuth } from '../../context/AuthContext';
@@ -27,6 +29,7 @@ const AdminManagement = () => {
     const [deletingAdmin, setDeletingAdmin] = useState(null);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -353,15 +356,25 @@ const AdminManagement = () => {
                                         <label className="form-label">
                                             <FontAwesomeIcon icon={faKey} /> Password {editingAdmin ? '(leave empty to keep current)' : '*'}
                                         </label>
-                                        <input
-                                            type="password"
-                                            className="form-input"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder={editingAdmin ? '••••••••' : 'Enter password'}
-                                            required={!editingAdmin}
-                                            minLength={6}
-                                        />
+                                        <div className="password-input-wrapper">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                className="form-input"
+                                                value={formData.password}
+                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                placeholder={editingAdmin ? '••••••••' : 'Enter password'}
+                                                required={!editingAdmin}
+                                                minLength={6}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="password-toggle-btn"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                title={showPassword ? "Hide password" : "Show password"}
+                                            >
+                                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="form-group">

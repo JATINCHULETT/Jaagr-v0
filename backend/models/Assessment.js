@@ -65,13 +65,13 @@ const assessmentSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    timePerQuestion: {
+    inactivityAlertTime: {
         type: Number,
-        default: 30 // 30 seconds
+        default: 40 // seconds before showing inactivity alert
     },
-    totalTime: {
+    inactivityEndTime: {
         type: Number,
-        default: 15 // 15 minutes max
+        default: 120 // total seconds of inactivity before test ends
     },
     questions: [questionSchema],
     buckets: [bucketSchema],

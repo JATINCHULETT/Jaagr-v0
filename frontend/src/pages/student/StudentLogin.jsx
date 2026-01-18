@@ -6,7 +6,8 @@ import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
-import logoImg from '../../assets/logo.png';
+import lightThemeLogo from '../../assets/DarkColorLogo.svg';
+import darkThemeLogo from '../../assets/LightColorLogo.svg';
 import './StudentLogin.css';
 
 const StudentLogin = () => {
@@ -21,6 +22,8 @@ const StudentLogin = () => {
     const { login } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
+
+    const logoImg = theme === 'dark' ? darkThemeLogo : lightThemeLogo;
 
     useEffect(() => {
         const schoolId = searchParams.get('school');

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SchoolManagement from './pages/admin/SchoolManagement';
@@ -15,6 +16,7 @@ import SchoolAnalytics from './pages/school/SchoolAnalytics';
 import StudentLogin from './pages/student/StudentLogin';
 import StudentAssessment from './pages/student/StudentAssessment';
 import ThankYou from './pages/student/ThankYou';
+import StudentIncomplete from './pages/student/StudentIncomplete';
 import Settings from './pages/Settings';
 
 // Protected Route Component
@@ -65,6 +67,7 @@ function App() {
                 </ProtectedRoute>
             } />
             <Route path="/student/thankyou" element={<ThankYou />} />
+            <Route path="/student/incomplete" element={<StudentIncomplete />} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={
@@ -115,12 +118,12 @@ function App() {
                 </ProtectedRoute>
             } />
 
-            {/* Default redirect */}
+            {/* Landing Page - Public */}
             <Route path="/" element={
                 isAuthenticated ? (
                     <Navigate to={`/${user?.role}`} replace />
                 ) : (
-                    <Navigate to="/login" replace />
+                    <LandingPage />
                 )
             } />
 

@@ -15,10 +15,12 @@ import {
     faPlus
 } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../../components/common/Layout';
+import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './SchoolManagement.css';
 
 const SchoolManagement = () => {
+    const toast = useToast();
     const [schools, setSchools] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [assessments, setAssessments] = useState([]);
@@ -112,7 +114,7 @@ const SchoolManagement = () => {
             }
         } catch (error) {
             console.error('Error saving school:', error);
-            alert(error.response?.data?.message || 'Error saving school');
+            toast.error(error.response?.data?.message || 'Error saving school');
         }
     };
 
@@ -135,7 +137,7 @@ const SchoolManagement = () => {
             fetchSchools();
         } catch (error) {
             console.error('Error toggling block:', error);
-            alert(error.response?.data?.message || 'Error');
+            toast.error(error.response?.data?.message || 'Error');
         }
     };
 
@@ -229,7 +231,7 @@ const SchoolManagement = () => {
             closeCredentialsModal();
         } catch (error) {
             console.error('Error saving credentials:', error);
-            alert(error.response?.data?.message || 'Error updating credentials');
+            toast.error(error.response?.data?.message || 'Error updating credentials');
         } finally {
             setSavingCredentials(false);
         }
@@ -269,7 +271,7 @@ const SchoolManagement = () => {
             closeTestsModal();
         } catch (error) {
             console.error('Error saving tests:', error);
-            alert(error.response?.data?.message || 'Error updating tests');
+            toast.error(error.response?.data?.message || 'Error updating tests');
         } finally {
             setSavingTests(false);
         }
@@ -277,7 +279,7 @@ const SchoolManagement = () => {
 
     const copyToClipboard = (text) => {
         navigator.clipboard.writeText(text);
-        alert('Copied to clipboard!');
+        toast.success('Copied to clipboard!');
     };
 
     const openAnalyticsModal = async (school) => {
@@ -542,7 +544,7 @@ const SchoolManagement = () => {
                                                 navigator.clipboard.writeText(
                                                     `School ID: ${credentials.schoolId}\nPassword: ${credentials.password}`
                                                 );
-                                                alert('Credentials copied to clipboard!');
+                                                toast.success('Credentials copied to clipboard!');
                                             }}
                                         >
                                             📋 Copy Credentials

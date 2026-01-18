@@ -71,7 +71,7 @@ router.get('/tests', protect, isStudent, async (req, res) => {
         const assessments = await Assessment.find({
             _id: { $in: assessmentIds },
             isActive: true
-        }).select('title description timePerQuestion totalTime questions');
+        }).select('title description inactivityAlertTime inactivityEndTime questions');
 
         const testsWithDetails = tests.map(t => {
             const assessment = assessments.find(
@@ -82,8 +82,8 @@ router.get('/tests', protect, isStudent, async (req, res) => {
                 title: assessment?.title,
                 description: assessment?.description,
                 questionCount: assessment?.questions?.length || 0,
-                timePerQuestion: assessment?.timePerQuestion || 30,
-                totalTime: assessment?.totalTime || 15
+                inactivityAlertTime: assessment?.inactivityAlertTime || 40,
+                inactivityEndTime: assessment?.inactivityEndTime || 120
             };
         });
 
@@ -147,15 +147,28 @@ router.get('/assessment/:id', protect, isStudent, async (req, res) => {
             await student.save();
         }
 
+        // Check for existing incomplete submission to resume
+        const existingSubmission = await Submission.findOne({
+            studentId: student._id,
+            assessmentId,
+            status: 'incomplete'
+        });
+
         res.json({
             _id: assessment._id,
             title: assessment.title,
-            timePerQuestion: assessment.timePerQuestion,
-            totalTime: assessment.totalTime,
+            inactivityAlertTime: assessment.inactivityAlertTime,
+            inactivityEndTime: assessment.inactivityEndTime,
             totalQuestions: questions.length,
             questionsPerSection: 8, // For level progression
             totalSections: 4,
-            questions
+            questions,
+            // Resume data if exists
+            resumeData: existingSubmission ? {
+                lastQuestionIndex: existingSubmission.lastQuestionIndex,
+                answers: existingSubmission.answers,
+                submissionId: existingSubmission._id
+            } : null
         });
     } catch (error) {
         console.error('Get assessment error:', error);
@@ -168,7 +181,7 @@ router.get('/assessment/:id', protect, isStudent, async (req, res) => {
 // @access  Student
 router.post('/submit', protect, isStudent, async (req, res) => {
     try {
-        const { assessmentId, answers, timeTaken, mobileNumber, email } = req.body;
+        const { assessmentId, answers, timeTaken, mobileNumber, email, moodCheck, consentGiven } = req.body;
         const student = req.student;
 
         console.log('Submit request received:', { assessmentId, answersCount: answers?.length, studentId: student?._id });
@@ -266,7 +279,10 @@ router.post('/submit', protect, isStudent, async (req, res) => {
             answers: processedAnswers,
             timeTaken: timeTaken || 0,
             mobileNumber: mobileNumber || '',
-            email: email || ''
+            email: email || '',
+            consentGiven: consentGiven || false,
+            moodCheck: moodCheck || null,
+            status: 'complete' // Mark as complete
         });
 
         console.log('Submission created:', submission._id);
@@ -306,6 +322,64 @@ router.post('/submit', protect, isStudent, async (req, res) => {
     }
 });
 
+// @route   POST /api/student/save-progress
+// @desc    Save incomplete assessment progress (when test auto-ends due to inactivity)
+// @access  Student
+router.post('/save-progress', protect, isStudent, async (req, res) => {
+    try {
+        const { assessmentId, answers, lastQuestionIndex, totalInactivityTime, timeTaken, moodCheck, consentGiven } = req.body;
+        const student = req.student;
+
+        console.log('Save progress request:', { assessmentId, lastQuestionIndex, answersCount: answers?.length });
+
+        if (!assessmentId) {
+            return res.status(400).json({ message: 'Assessment ID is required' });
+        }
+
+        // Check for existing incomplete submission
+        let submission = await Submission.findOne({
+            studentId: student._id,
+            assessmentId,
+            status: { $in: ['pending', 'incomplete'] }
+        });
+
+        if (submission) {
+            // Update existing incomplete submission
+            submission.answers = answers || submission.answers;
+            submission.lastQuestionIndex = lastQuestionIndex || submission.lastQuestionIndex;
+            submission.totalInactivityTime = totalInactivityTime || submission.totalInactivityTime;
+            submission.timeTaken = timeTaken || submission.timeTaken;
+            submission.status = 'incomplete';
+            await submission.save();
+            console.log('Updated existing incomplete submission:', submission._id);
+        } else {
+            // Create new incomplete submission
+            submission = await Submission.create({
+                studentId: student._id,
+                schoolId: student.schoolId,
+                assessmentId,
+                answers: answers || [],
+                lastQuestionIndex: lastQuestionIndex || 0,
+                totalInactivityTime: totalInactivityTime || 0,
+                timeTaken: timeTaken || 0,
+                moodCheck: moodCheck || null,
+                consentGiven: consentGiven || false,
+                status: 'incomplete'
+            });
+            console.log('Created new incomplete submission:', submission._id);
+        }
+
+        res.json({
+            success: true,
+            message: 'Progress saved. You can resume later.',
+            submissionId: submission._id
+        });
+    } catch (error) {
+        console.error('Save progress error:', error.message, error.stack);
+        res.status(500).json({ message: 'Server error: ' + error.message });
+    }
+});
+
 // @route   GET /api/student/school-info
 // @desc    Get school info for login page branding
 // @access  Public
@@ -333,6 +407,86 @@ router.get('/school-info', async (req, res) => {
     } catch (error) {
         console.error('School info error:', error);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// @route   POST /api/student/save-progress
+// @desc    Save partial assessment progress
+// @access  Student
+router.post('/save-progress', protect, isStudent, async (req, res) => {
+    try {
+        const { assessmentId, answers, lastQuestionIndex, totalInactivityTime, timeTaken, moodCheck, consentGiven } = req.body;
+        const student = req.student;
+
+        if (!assessmentId) {
+            return res.status(400).json({ message: 'Assessment ID is required' });
+        }
+
+        const schoolIdValue = student.schoolId?._id || student.schoolId;
+
+        // Check for existing incomplete submission
+        let submission = await Submission.findOne({
+            studentId: student._id,
+            assessmentId,
+            status: { $in: ['pending', 'incomplete'] }
+        });
+
+        // Process answers array for partial answers
+        const assessment = await Assessment.findById(assessmentId);
+        const processedAnswers = [];
+
+        if (answers && Array.isArray(answers)) {
+            answers.forEach((answer, index) => {
+                if (answer && answer.selectedOption !== undefined && answer.selectedOption !== null) {
+                    const question = assessment?.questions?.[index];
+                    const option = question?.options?.[answer.selectedOption];
+                    const marks = option?.marks || 0;
+
+                    processedAnswers.push({
+                        questionIndex: index,
+                        section: question?.section || 'A',
+                        selectedOption: answer.selectedOption,
+                        marks,
+                        timeTakenForQuestion: answer.timeTaken || 0
+                    });
+                }
+            });
+        }
+
+        if (submission) {
+            // Update existing submission
+            submission.answers = processedAnswers;
+            submission.lastQuestionIndex = lastQuestionIndex || 0;
+            submission.totalInactivityTime = totalInactivityTime || 0;
+            submission.timeTaken = timeTaken || 0;
+            submission.status = 'incomplete';
+            if (moodCheck) submission.moodCheck = moodCheck;
+            if (consentGiven !== undefined) submission.consentGiven = consentGiven;
+            await submission.save();
+        } else {
+            // Create new incomplete submission
+            submission = await Submission.create({
+                studentId: student._id,
+                schoolId: schoolIdValue,
+                assessmentId,
+                answers: processedAnswers,
+                lastQuestionIndex: lastQuestionIndex || 0,
+                totalInactivityTime: totalInactivityTime || 0,
+                timeTaken: timeTaken || 0,
+                status: 'incomplete',
+                moodCheck: moodCheck || null,
+                consentGiven: consentGiven || false
+            });
+        }
+
+        res.json({
+            success: true,
+            submissionId: submission._id,
+            status: 'incomplete'
+        });
+    } catch (error) {
+        console.error('Save progress error:', error);
+        res.status(500).json({ message: 'Server error: ' + error.message });
     }
 });
 

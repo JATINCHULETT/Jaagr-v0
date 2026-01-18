@@ -39,9 +39,18 @@ const submissionSchema = new mongoose.Schema({
         ref: 'Assessment',
         required: true
     },
+    status: {
+        type: String,
+        enum: ['pending', 'incomplete', 'complete'],
+        default: 'pending'
+    },
+    lastQuestionIndex: {
+        type: Number,
+        default: 0 // Track resume point for incomplete tests
+    },
     totalScore: {
         type: Number,
-        required: true
+        default: 0
     },
     sectionScores: {
         A: { type: Number, default: 0 },
@@ -65,12 +74,16 @@ const submissionSchema = new mongoose.Schema({
     },
     assignedBucket: {
         type: String,
-        required: true
+        default: '' // Empty for incomplete tests
     },
     answers: [answerSchema],
     timeTaken: {
         type: Number,
-        required: true // in seconds
+        default: 0 // in seconds
+    },
+    totalInactivityTime: {
+        type: Number,
+        default: 0 // Track total inactivity for incomplete tests
     },
     mobileNumber: {
         type: String,
@@ -79,6 +92,25 @@ const submissionSchema = new mongoose.Schema({
     email: {
         type: String,
         trim: true
+    },
+    consentGiven: {
+        type: Boolean,
+        default: false
+    },
+    moodCheck: {
+        mood: {
+            type: Number,
+            min: 1,
+            max: 5
+        },
+        sleep: {
+            type: String,
+            enum: ['great', 'decent', 'notGreat', 'barely']
+        },
+        energy: {
+            type: String,
+            enum: ['full', 'okay', 'exhausted']
+        }
     },
     submittedAt: {
         type: Date,

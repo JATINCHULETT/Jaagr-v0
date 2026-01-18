@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faBuilding, faEnvelope, faShieldHalved, faKey, faSave, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faBuilding, faEnvelope, faShieldHalved, faKey, faSave, faPen, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Layout from '../components/common/Layout';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -23,6 +23,7 @@ const Settings = () => {
     const [profileLoading, setProfileLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
+    const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
     useEffect(() => {
         setProfile({
@@ -226,42 +227,72 @@ const Settings = () => {
                     <form onSubmit={handlePasswordSubmit} className="password-form">
                         <div className="form-group">
                             <label>Current Password</label>
-                            <input
-                                type="password"
-                                name="current"
-                                value={passwords.current}
-                                onChange={handlePasswordChange}
-                                required
-                                className="form-input"
-                                placeholder="Enter current password"
-                            />
+                            <div className="password-input-wrapper">
+                                <input
+                                    type={showPasswords.current ? "text" : "password"}
+                                    name="current"
+                                    value={passwords.current}
+                                    onChange={handlePasswordChange}
+                                    required
+                                    className="form-input"
+                                    placeholder="Enter current password"
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle-btn"
+                                    onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                    title={showPasswords.current ? "Hide password" : "Show password"}
+                                >
+                                    <FontAwesomeIcon icon={showPasswords.current ? faEyeSlash : faEye} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label>New Password</label>
-                            <input
-                                type="password"
-                                name="new"
-                                value={passwords.new}
-                                onChange={handlePasswordChange}
-                                required
-                                className="form-input"
-                                placeholder="Enter new password"
-                                minLength={6}
-                            />
+                            <div className="password-input-wrapper">
+                                <input
+                                    type={showPasswords.new ? "text" : "password"}
+                                    name="new"
+                                    value={passwords.new}
+                                    onChange={handlePasswordChange}
+                                    required
+                                    className="form-input"
+                                    placeholder="Enter new password"
+                                    minLength={6}
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle-btn"
+                                    onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                                    title={showPasswords.new ? "Hide password" : "Show password"}
+                                >
+                                    <FontAwesomeIcon icon={showPasswords.new ? faEyeSlash : faEye} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label>Confirm New Password</label>
-                            <input
-                                type="password"
-                                name="confirm"
-                                value={passwords.confirm}
-                                onChange={handlePasswordChange}
-                                required
-                                className="form-input"
-                                placeholder="Confirm new password"
-                            />
+                            <div className="password-input-wrapper">
+                                <input
+                                    type={showPasswords.confirm ? "text" : "password"}
+                                    name="confirm"
+                                    value={passwords.confirm}
+                                    onChange={handlePasswordChange}
+                                    required
+                                    className="form-input"
+                                    placeholder="Confirm new password"
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle-btn"
+                                    onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                                    title={showPasswords.confirm ? "Hide password" : "Show password"}
+                                >
+                                    <FontAwesomeIcon icon={showPasswords.confirm ? faEyeSlash : faEye} />
+                                </button>
+                            </div>
                         </div>
 
                         {message.text && (

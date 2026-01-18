@@ -12,7 +12,9 @@ import {
     faUserShield
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
-import logoImg from '../../assets/logo.png';
+import { useTheme } from '../../context/ThemeContext';
+import lightThemeLogo from '../../assets/DarkColorLogo.svg';
+import darkThemeLogo from '../../assets/LightColorLogo.svg';
 import './Sidebar.css';
 
 const adminMenuItems = [
@@ -32,9 +34,11 @@ const schoolMenuItems = [
 
 const Sidebar = () => {
     const { user, logout, isAdmin, isSchool } = useAuth();
+    const { theme } = useTheme();
     const navigate = useNavigate();
 
     const menuItems = isAdmin ? adminMenuItems : isSchool ? schoolMenuItems : [];
+    const logoImg = theme === 'dark' ? darkThemeLogo : lightThemeLogo;
 
     const handleLogout = () => {
         logout();

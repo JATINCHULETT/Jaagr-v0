@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../../components/common/Layout';
+import { useToast } from '../../components/common/Toast';
 import api from '../../services/api';
 import './AssessmentManagement.css';
 
@@ -18,6 +19,7 @@ const defaultSections = [
 ];
 
 const AssessmentManagement = () => {
+    const toast = useToast();
     const [assessments, setAssessments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -31,8 +33,8 @@ const AssessmentManagement = () => {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        timePerQuestion: 30,
-        totalTime: 15,
+        inactivityAlertTime: 40,
+        inactivityEndTime: 120,
         questions: [],
         buckets: defaultBuckets,
         customSections: defaultSections
@@ -71,8 +73,8 @@ const AssessmentManagement = () => {
         setFormData({
             title: '',
             description: '',
-            timePerQuestion: 30,
-            totalTime: 15,
+            inactivityAlertTime: 40,
+            inactivityEndTime: 120,
             questions: [],
             buckets: defaultBuckets,
             customSections: defaultSections
@@ -85,8 +87,8 @@ const AssessmentManagement = () => {
         setFormData({
             title: assessment.title,
             description: assessment.description || '',
-            timePerQuestion: assessment.timePerQuestion || 30,
-            totalTime: assessment.totalTime || 15,
+            inactivityAlertTime: assessment.inactivityAlertTime || 40,
+            inactivityEndTime: assessment.inactivityEndTime || 120,
             questions: assessment.questions || [],
             buckets: assessment.buckets || defaultBuckets,
             customSections: assessment.customSections?.length > 0
@@ -113,11 +115,11 @@ const AssessmentManagement = () => {
 
     const addQuestion = () => {
         if (!currentQuestion.text.trim()) {
-            alert('Please enter question text');
+            toast.warning('Please enter question text');
             return;
         }
         if (currentQuestion.options.some(o => !o.label.trim())) {
-            alert('Please fill all 4 options');
+            toast.warning('Please fill all 4 options');
             return;
         }
 
@@ -148,11 +150,11 @@ const AssessmentManagement = () => {
 
     const addSection = () => {
         if (!newSection.key.trim() || !newSection.name.trim()) {
-            alert('Please enter both section key and name');
+            toast.warning('Please enter both section key and name');
             return;
         }
         if (formData.customSections.some(s => s.key === newSection.key)) {
-            alert('Section key already exists');
+            toast.warning('Section key already exists');
             return;
         }
         setFormData({
@@ -166,7 +168,7 @@ const AssessmentManagement = () => {
         // Check if any questions use this section
         const hasQuestions = formData.questions.some(q => q.section === key);
         if (hasQuestions) {
-            alert('Cannot remove section with existing questions. Remove or reassign questions first.');
+            toast.warning('Cannot remove section with existing questions. Remove or reassign questions first.');
             return;
         }
         setFormData({
@@ -177,15 +179,15 @@ const AssessmentManagement = () => {
 
     const handleSave = async () => {
         if (!formData.title.trim()) {
-            alert('Please enter assessment title');
+            toast.warning('Please enter assessment title');
             return;
         }
         if (formData.questions.length === 0 && !editingAssessment) {
-            alert('Please add at least one question');
+            toast.warning('Please add at least one question');
             return;
         }
         if (formData.customSections.length === 0) {
-            alert('Please add at least one section');
+            toast.warning('Please add at least one section');
             return;
         }
 
@@ -200,7 +202,7 @@ const AssessmentManagement = () => {
             fetchAssessments();
         } catch (error) {
             console.error('Save error:', error);
-            alert(error.response?.data?.message || 'Error saving assessment');
+            toast.error(error.response?.data?.message || 'Error saving assessment');
         } finally {
             setSaving(false);
         }
@@ -208,7 +210,7 @@ const AssessmentManagement = () => {
 
     const handleDelete = async (assessment) => {
         if (assessment.isDefault) {
-            alert('Cannot delete the default assessment');
+            toast.warning('Cannot delete the default assessment');
             return;
         }
 
@@ -221,7 +223,7 @@ const AssessmentManagement = () => {
             fetchAssessments();
         } catch (error) {
             console.error('Delete error:', error);
-            alert(error.response?.data?.message || 'Error deleting assessment');
+            toast.error(error.response?.data?.message || 'Error deleting assessment');
         }
     };
 
@@ -234,7 +236,7 @@ const AssessmentManagement = () => {
             fetchAssessments();
         } catch (error) {
             console.error('Set default error:', error);
-            alert(error.response?.data?.message || 'Error setting default');
+            toast.error(error.response?.data?.message || 'Error setting default');
         } finally {
             setSettingDefault(null);
         }
@@ -293,8 +295,8 @@ const AssessmentManagement = () => {
                                 <span className="assessment-stat-label">Questions</span>
                             </div>
                             <div className="assessment-stat">
-                                <span className="assessment-stat-value">{assessment.timePerQuestion || 30}s</span>
-                                <span className="assessment-stat-label">Per Question</span>
+                                <span className="assessment-stat-value">{assessment.inactivityAlertTime || 40}s</span>
+                                <span className="assessment-stat-label">Alert Time</span>
                             </div>
                             <div className="assessment-stat">
                                 <span className="assessment-stat-value">{assessment.customSections?.length || 4}</span>
@@ -427,22 +429,24 @@ const AssessmentManagement = () => {
 
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label className="form-label">Time per Question (seconds)</label>
+                                        <label className="form-label">Inactivity Alert Time (seconds)</label>
                                         <input
                                             type="number"
                                             className="form-input"
-                                            value={formData.timePerQuestion}
-                                            onChange={(e) => setFormData({ ...formData, timePerQuestion: parseInt(e.target.value) || 30 })}
+                                            value={formData.inactivityAlertTime}
+                                            onChange={(e) => setFormData({ ...formData, inactivityAlertTime: parseInt(e.target.value) || 40 })}
                                         />
+                                        <small className="form-hint">Show alert after this many seconds of no answer</small>
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Total Time (minutes)</label>
+                                        <label className="form-label">Inactivity End Time (seconds)</label>
                                         <input
                                             type="number"
                                             className="form-input"
-                                            value={formData.totalTime}
-                                            onChange={(e) => setFormData({ ...formData, totalTime: parseInt(e.target.value) || 15 })}
+                                            value={formData.inactivityEndTime}
+                                            onChange={(e) => setFormData({ ...formData, inactivityEndTime: parseInt(e.target.value) || 120 })}
                                         />
+                                        <small className="form-hint">End test after this many total seconds of inactivity</small>
                                     </div>
                                 </div>
 
