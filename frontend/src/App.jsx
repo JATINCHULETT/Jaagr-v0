@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 // Pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
+import ChangePassword from './pages/ChangePassword';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import SchoolManagement from './pages/admin/SchoolManagement';
 import AssessmentManagement from './pages/admin/AssessmentManagement';
@@ -58,6 +59,9 @@ function App() {
                     <Settings />
                 </ProtectedRoute>
             } />
+
+            {/* Password Change Route for Schools */}
+            <Route path="/change-password" element={<ChangePassword />} />
 
             {/* Student Routes - Public login, protected assessment */}
             <Route path="/student/login" element={<StudentLogin />} />

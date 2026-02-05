@@ -39,3 +39,5 @@ coverage/
 
 # Vite
 *.local
+ftd.zip
+backend/seedAdmin.js

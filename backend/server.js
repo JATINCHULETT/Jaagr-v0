@@ -8,6 +8,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const connectDB = require('./config/db');
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const schoolRoutes = require('./routes/school');
 const studentRoutes = require('./routes/student');
@@ -96,9 +97,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes - with auth rate limiting on login endpoints
+app.use('/api/auth/login', authLimiter);
 app.use('/api/admin/login', authLimiter);
 app.use('/api/school/login', authLimiter);
 app.use('/api/student/login', authLimiter);
+app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/school', schoolRoutes);
 app.use('/api/student', studentRoutes);
